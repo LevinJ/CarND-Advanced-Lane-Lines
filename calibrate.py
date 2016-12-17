@@ -1,24 +1,25 @@
 import sys
 import os
+from _pickle import dump
 sys.path.insert(0, os.path.abspath('..'))
 
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+from utility.dumpload import DumpLoad
 import glob
 
 
 class Calibrarte(object):
     def __init__(self):
         return
-    def find_coners(self):
+    def __find_coners(self):
         # prepare object points
         nx = 9#TODO: enter the number of inside corners in x
-        ny = 6#TODO: enter the number of inside corners in y
+        ny = 5#TODO: enter the number of inside corners in y
         
         # Make a list of calibration images
-        fname = './camera_cal/calibration1.jpg'
+        fname = './camera_cal/calibration1.jpg'  #9*5
         img = cv2.imread(fname)
         
         # Convert to grayscale
@@ -35,7 +36,12 @@ class Calibrarte(object):
             return
         else:
             print('no corners found!!')
-    def calibrate(self):
+            
+    def __calibrate(self):
+        dumpload = DumpLoad('./camera_cal/cameracalibration.p')
+        if dumpload.isExisiting():
+            return dumpload.load()
+            
         objpoints = []
         imgpoints = []
         nx = 9
@@ -52,42 +58,40 @@ class Calibrarte(object):
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             
             # Find the chessboard corners
-            ret, corners = cv2.findChessboardCorners(gray, (nx, ny), None)
+            if 'calibration1.jpg' in fname:
+                ret, corners = cv2.findChessboardCorners(gray, (9, 5), None)
+            else:
+                ret, corners = cv2.findChessboardCorners(gray, (nx, ny), None)
             
             # If found, draw corners
             if ret == True:
                 # Draw and display the corners
                 imgpoints.append(corners)
-                objpoints.append(objp)
-#                 cv2.drawChessboardCorners(img, (nx, ny), corners, ret)
-#                 plt.imshow(img)
+                if 'calibration1.jpg' in fname:
+                    objpoints.append(objp[0:45,:])
+                else:
+                    objpoints.append(objp)
+
 
             else:
                 print('no corners found in image {}'.format(fname))
                 
-        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
+        _, mtx, dist, _, _ = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
+        
+        dumpload.dump((mtx, dist))
             
-        return ret, mtx, dist, rvecs, tvecs
-    def run(self):
-#         self.find_coners()
-        self.calibrate()
+        return mtx, dist
+    def undistort(self, img):
+        mtx, dist= self.__calibrate()
         
-        plt.show()
-        return
-
-class Undistort(object):
-    def __init__(self):
-
-        return
-   
-    
+        undist_img = cv2.undistort(img, mtx, dist, None, mtx)
+        return undist_img
     def run(self):
-        fname = './camera_cal/calibration2.jpg'
+        fname = './test_images/test1.jpg'
         img = cv2.imread(fname)
-        cali = Calibrarte()
-        ret, mtx, dist, rvecs, tvecs = cali.calibrate()
+        img = img[...,::-1] #convert from opencv bgr to standard rgb
         
-        undist = cv2.undistort(img, mtx, dist, None, mtx)
+        undist = self.undistort(img)
         
         f, (ax1, ax2) = plt.subplots(1, 2)
         f.tight_layout()
@@ -97,11 +101,10 @@ class Undistort(object):
         ax2.set_title('Undistorted Image', fontsize=50)
 
         plt.show()
-
         return
-    
+
 
 
 if __name__ == "__main__":   
-    obj= Undistort()
+    obj= Calibrarte()
     obj.run()
