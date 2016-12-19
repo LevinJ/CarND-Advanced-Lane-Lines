@@ -87,7 +87,8 @@ class Calibrarte(object):
         undist_img = cv2.undistort(img, mtx, dist, None, mtx)
         return undist_img
     def run(self):
-        fname = './test_images/test1.jpg'
+#         fname = './test_images/test1.jpg'
+        fname = './camera_cal/calibration1.jpg'
         img = cv2.imread(fname)
         img = img[...,::-1] #convert from opencv bgr to standard rgb
         

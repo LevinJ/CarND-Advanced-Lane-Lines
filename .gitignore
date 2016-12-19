@@ -1,0 +1,7 @@
+data
+.ipynb_checkpoints
+*.swp
+*.p
+*.pyc
+logs/
+*~
