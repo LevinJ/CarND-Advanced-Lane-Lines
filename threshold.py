@@ -117,6 +117,10 @@ class Threshold(Calibrarte):
         res_imgs.append(combined)
         
         
+        color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
+        res_imgs.append(color_combined)
+        
+        
         
         res_img = self.stack_image_horizontal(res_imgs)
         return  res_img
