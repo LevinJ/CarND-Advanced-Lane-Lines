@@ -94,8 +94,9 @@ class Threshold(Calibrarte):
         
         
         gradx = self.abs_sobel_thresh(image, orient='x', thresh_min=30, thresh_max=100)
-        grady = self.abs_sobel_thresh(image, orient='y', thresh_min=30, thresh_max=100)
         res_imgs.append(gradx)
+        
+        grady = self.abs_sobel_thresh(image, orient='y', thresh_min=30, thresh_max=100)
         res_imgs.append(grady)
         
         mag_binary = self.mag_thresh(image, sobel_kernel=9, mag_thresh=(30, 100))
@@ -104,14 +105,36 @@ class Threshold(Calibrarte):
         dir_binary = self.dir_threshold(image, sobel_kernel=15, thresh=(0.7, 1.3))
         res_imgs.append(dir_binary)
         
-        combined = np.zeros_like(dir_binary)
-        combined[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
+        
+        red_color = self.red_thres(image, (200, 255))
+        res_imgs.append(red_color)
+        
+        s_color = self.hls_thres(image, (90, 255))
+        res_imgs.append(s_color)
+        
+        combined = np.zeros_like(s_color)
+        combined[(gradx == 1) | (s_color == 1)] = 1
         res_imgs.append(combined)
         
         
         
         res_img = self.stack_image_horizontal(res_imgs)
         return  res_img
+
+    def hls_thres(self, image, thresh=(0, 255)):
+        hls = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
+#         H = hls[:,:,0]
+#         L = hls[:,:,1]
+        S = hls[:,:,2]
+        binary = np.zeros_like(S)
+        binary[(S > thresh[0]) & (S <= thresh[1])] = 1
+        return binary
+    
+    def red_thres(self, image, thresh=(0, 255)):
+        R = image[:,:,2]
+        binary = np.zeros_like(R)
+        binary[(R > thresh[0]) & (R <= thresh[1])] = 1
+        return binary
     def run(self):
         fnames = ['./test_images/signs_vehicles_xygrad.png','./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg',
           './test_images/test5.jpg','./test_images/test6.jpg']
