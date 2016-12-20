@@ -85,9 +85,9 @@ class Threshold(Calibrarte):
             binary_output[(absgraddir >= thresh[0]) & (absgraddir <= thresh[1])] = 1
         
         return binary_output
-    def thresh_one_image(self, fname):
-        image = cv2.imread(fname)
-        image = self.undistort(image)
+    def thresh_one_image(self, fname, debug=False):
+        original_image = cv2.imread(fname)
+        image = self.undistort(original_image)
 
         res_imgs = []
         res_imgs.append(image)
@@ -123,6 +123,9 @@ class Threshold(Calibrarte):
         
         
         res_img = self.stack_image_horizontal(res_imgs)
+        
+        if not debug:
+            return original_image, image, combined
         return  res_img
 
     def hls_thres(self, image, thresh=(0, 255)):
@@ -144,7 +147,7 @@ class Threshold(Calibrarte):
           './test_images/test5.jpg','./test_images/test6.jpg']
         res_imgs = []
         for fname in fnames:
-            img = self.thresh_one_image(fname)
+            img = self.thresh_one_image(fname,debug=True)
             res_imgs.append(img)
        
         res_imgs = np.array(res_imgs)

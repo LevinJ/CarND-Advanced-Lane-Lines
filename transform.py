@@ -6,12 +6,12 @@ sys.path.insert(0, os.path.abspath('..'))
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from calibrate import Calibrarte
+from threshold import Threshold
 
 
-class Transform(Calibrarte):
+class Transform(Threshold):
     def __init__(self):
-        Calibrarte.__init__(self)
+        Threshold.__init__(self)
         return
     # Define a function that takes an image, number of x and y points, 
     # camera matrix and distortion coefficients
@@ -94,22 +94,34 @@ class Transform(Calibrarte):
         
         
         return
-        
-    def run(self):
-        fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
-                  './test_images/straight16.jpg','./test_images/straight17.jpg']
-#         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg',
-#                   './test_images/test5.jpg','./test_images/test6.jpg']
+    def test_transform(self, fnames):
+       
 
         
-        f, axes = plt.subplots(len(fnames), 3,sharex=True)
+        _, axes = plt.subplots(len(fnames), 3,sharex=True)
         axes = axes.reshape(-1,3)
-#         f.tight_layout()
         for i in range(len(fnames)):
             fname = fnames[i]
             self.show_one_image(axes[i], fname)
       
-
+        return
+        
+    def run(self):
+        fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
+                  './test_images/straight16.jpg','./test_images/straight17.jpg']
+        fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg',
+                  './test_images/test5.jpg','./test_images/test6.jpg']
+#         self.test_transform()
+        res_imgs = []
+        for fname in fnames:
+            original_img, img, thres_img = self.thresh_one_image(fname)
+            pers_img = self.bird_view(thres_img)
+            res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img]))
+        
+        res_imgs = np.array(res_imgs)
+        res_imgs = np.concatenate(res_imgs, axis=0)
+        res_imgs = res_imgs[...,::-1]
+        plt.imshow(res_imgs)
         plt.show()
         return
 
