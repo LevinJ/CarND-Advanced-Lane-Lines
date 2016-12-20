@@ -58,7 +58,7 @@ class Transform(Threshold):
         
         # For destination points, I'm arbitrarily choosing some points to be
         # a nice fit for displaying our warped result 
-        offset_x = 500
+        offset_x = 300
         offset_y = 0
         dst = np.float32([(offset_x, offset_y), (width-offset_x,offset_y), (width-offset_x,height), (offset_x, height)])
         # Given src and dst points, calculate the perspective transform matrix
@@ -67,9 +67,9 @@ class Transform(Threshold):
         warped = cv2.warpPerspective(img, M, (width, height))
         
         #for debugging prupose
-        thickness = 3
-        pts = src.reshape((-1,1,2)).astype(np.int32)
-        cv2.polylines(img,[pts],True,(0,0,255),thickness)
+#         thickness = 3
+#         pts = src.reshape((-1,1,2)).astype(np.int32)
+#         cv2.polylines(img,[pts],True,1,thickness)
         
 #         pts = dst.reshape((-1,1,2)).astype(np.int32)
 #         cv2.polylines(warped,[pts],True,(0,0,255),thickness)

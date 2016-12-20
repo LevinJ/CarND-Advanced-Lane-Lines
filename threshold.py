@@ -113,19 +113,21 @@ class Threshold(Calibrarte):
         res_imgs.append(s_color)
         
         combined = np.zeros_like(s_color)
+#         combined[((gradx == 1) | (s_color == 1)) & (dir_binary == 1)] = 1
         combined[(gradx == 1) | (s_color == 1)] = 1
         res_imgs.append(combined)
         
         
         color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
         res_imgs.append(color_combined)
-        
+#         
         
         
         res_img = self.stack_image_horizontal(res_imgs)
         
         if not debug:
             return original_image, image, combined
+#             return original_image, image, s_color
         return  res_img
 
     def hls_thres(self, image, thresh=(0, 255)):
