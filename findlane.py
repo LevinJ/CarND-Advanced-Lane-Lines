@@ -1,6 +1,6 @@
 import sys
 import os
-from _pickle import dump
+
 sys.path.insert(0, os.path.abspath('..'))
 
 import numpy as np
@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from transform import Transform
 from scipy import signal
 import matplotlib.pyplot as plt
+from detect_peaks import detect_peaks
 
 
 class Findlane(Transform):
@@ -19,7 +20,7 @@ class Findlane(Transform):
         img_height = img.shape[0]
         histogram = np.sum(img[img_height/2:,:], axis=0)
         plt.plot(histogram)
-        peakind = signal.find_peaks_cwt(histogram, [100])
+        indexes = detect_peaks(histogram, mph=10, mpd=500)
         return
 
     
