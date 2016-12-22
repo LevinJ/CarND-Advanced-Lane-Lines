@@ -122,13 +122,43 @@ class Threshold(Calibrarte):
         res_imgs.append(color_combined)
 #         
         
+        # region of interest
+        top_x_gap = 50
+        bottom_x_gap = 250
+#         vertices = np.array([[(600-top_x_gap,451), (690 + top_x_gap,451), (1165+bottom_x_gap,728),(240-bottom_x_gap,728)]], dtype=np.int32)
+        vertices = np.array([[(600-top_x_gap,451), (690 + top_x_gap,451), (1165 + bottom_x_gap,728),(240-bottom_x_gap,728)]], dtype=np.int32)
+        roi_img = self.region_of_interest(combined, vertices)
+        res_imgs.append(roi_img)
+        
         
         res_img = self.stack_image_horizontal(res_imgs)
         
         if not debug:
-            return original_image, image, combined
-#             return original_image, image, s_color
+            return original_image, image, roi_img
         return  res_img
+    def region_of_interest(self, img, vertices):
+        """
+        Applies an image mask.
+        
+        Only keeps the region of the image defined by the polygon
+        formed from `vertices`. The rest of the image is set to black.
+        """
+        #defining a blank mask to start with
+        mask = np.zeros_like(img)   
+        
+        #defining a 3 channel or 1 channel color to fill the mask with depending on the input image
+        if len(img.shape) > 2:
+            channel_count = img.shape[2]  # i.e. 3 or 4 depending on your image
+            ignore_mask_color = (255,) * channel_count
+        else:
+            ignore_mask_color = 255
+            
+        #filling pixels inside the polygon defined by "vertices" with the fill color    
+        cv2.fillPoly(mask, vertices, ignore_mask_color)
+        
+        #returning the image only where mask pixels are nonzero
+        masked_image = cv2.bitwise_and(img, mask)
+        return masked_image
 
     def hls_thres(self, image, thresh=(0, 255)):
         hls = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)

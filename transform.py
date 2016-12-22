@@ -51,7 +51,7 @@ class Transform(Threshold):
      
         # For source points I'm grabbing the outer four detected corners
 #         src = np.float32([(603,451), (687,451), (1066,664),(330,664)])
-        src = np.float32([(600,451), (690,451), (1165,728),(240,728)])
+        src = np.float32([(600,451), (680,451), (1165,728),(240,728)])
         
         
         
@@ -109,15 +109,15 @@ class Transform(Threshold):
     def run(self):
         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
-        fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg',
+        fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg']
-#         self.test_transform()
+#         self.test_transform(fnames)
         res_imgs = []
         for fname in fnames:
             original_img, img, thres_img = self.thresh_one_image(fname)
             pers_img = self.bird_view(thres_img)
             res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img]))
-        
+         
         res_imgs = np.array(res_imgs)
         res_imgs = np.concatenate(res_imgs, axis=0)
         res_imgs = res_imgs[...,::-1]
