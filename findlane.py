@@ -21,9 +21,11 @@ class Findlane(Transform):
         img_height = img.shape[0]
         num_histogram = 5
         y_step = img_height/num_histogram
-        peak_xs = []
+        
         peak_ys= []
         end = img_height
+        self.img_width = img.shape[1]
+        self.peak_xs = []
         
         histogram = np.sum(img[int(img_height/2):], axis=0)
         indexes = detect_peaks(histogram, mph=10, mpd=650)
@@ -38,16 +40,14 @@ class Findlane(Transform):
                 start = 0
             peak_ys.append((start, end))
             sliding_windows = self.__locate_true_centers(img, (start, end), sliding_windows)
-            peak_xs.append(sliding_windows)
+            self.peak_xs.append(sliding_windows)
             end = end - y_step
         
         
         
         img_with_windows = img.copy()
-        self.__draw_sliding_windows(img_with_windows, peak_ys, peak_xs)
-#         plt.imshow(img, cmap='gray')
-        
-        
+        self.__draw_sliding_windows(img_with_windows, peak_ys, self.peak_xs)
+  
         return img_with_windows
     def __draw_sliding_windows(self,img, peak_ys, peak_xs):
         sliding_windows_pts =[]
@@ -85,7 +85,46 @@ class Findlane(Transform):
                         break
                     new_window = res_window 
             new_sliding_windows.append(new_window)
+        return self.__adjust_sliding_windows(new_sliding_windows)
+    def __adjust_sliding_windows(self, sliding_windows):
+        
+        if len(self.peak_xs) <= 1:
+            #if this is the first sliding windows, then just return
+            return sliding_windows
+#         
+        new_sliding_windows = []
+         
+         
+        for i in range(len(sliding_windows)):
+            new_sliding_window = self.__adjust_sliding_window(sliding_windows[i], np.array(self.peak_xs)[:,i])
+            new_sliding_windows.append(new_sliding_window)
+            
         return new_sliding_windows
+    def __is_same_sign(self, x1, x2):
+        if x1==0 or x2==0:
+            return True
+        if x1 > 0 and x2 > 0:
+            return True
+        if x1<0 and x2<0:
+            return True
+        return False
+    def __adjust_sliding_window(self, sliding_window, peak_xs):
+        if sliding_window is None:
+            return None
+        if (sliding_window[0]<=0) or (sliding_window[1]>=self.img_width):
+            return sliding_window
+        
+        xs = np.array(list(peak_xs[:,0]) + [sliding_window[0]])
+        shiftxs = xs[1:]-xs[0:-1]
+        
+        print("shift {}".format(shiftxs))
+        
+        if(not self.__is_same_sign(shiftxs[-1], shiftxs[-2])):
+            sliding_window = peak_xs[-1] + shiftxs[-2]
+            print('adjust sliding windows')
+        
+        
+        return sliding_window
     def __locate_true_center(self, img, peak_y, sliding_window):
         if sliding_window is None:
             return None
@@ -128,7 +167,7 @@ class Findlane(Transform):
 #                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg']
-#         fnames = ['./test_images/test2.jpg']
+#         fnames = ['./test_images/test5.jpg']
 
         res_imgs = []
         for fname in fnames:
