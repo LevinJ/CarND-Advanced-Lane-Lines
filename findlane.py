@@ -56,7 +56,7 @@ class Findlane(Transform):
         right = np.zeros_like(img).astype(np.uint8)
         left[left_pixels[:,1], left_pixels[:,0]] = 255
         right[right_pixels[:,1], right_pixels[:,0]] = 255
-        img_left_right = np.dstack((left,right, zero))
+        img_left_right = np.dstack((left,zero,right))
         return img_left_right
     def __identify_lane_pixles(self, img, peak_ys, peak_xs):
         left_pixels = []

@@ -1,27 +1,64 @@
-import matplotlib.pyplot as plt
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath('..'))
+
 import numpy as np
-# Generate some fake data to represent lane-line pixels
-yvals = np.linspace(0, 100, num=101)*7.2  # to cover same y-range as image
-leftx = np.array([200 + (elem**2)*4e-4 + np.random.randint(-50, high=51) 
-                              for idx, elem in enumerate(yvals)])
-leftx = leftx[::-1]  # Reverse to match top-to-bottom in y
-rightx = np.array([900 + (elem**2)*4e-4 + np.random.randint(-50, high=51) 
-                                for idx, elem in enumerate(yvals)])
-rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
+import cv2
+import matplotlib.pyplot as plt
+from findlane import Findlane
+import matplotlib.pyplot as plt
 
-# Fit a second order polynomial to each fake lane line
-left_fit = np.polyfit(yvals, leftx, 2)
-left_fitx = left_fit[0]*yvals**2 + left_fit[1]*yvals + left_fit[2]
-right_fit = np.polyfit(yvals, rightx, 2)
-right_fitx = right_fit[0]*yvals**2 + right_fit[1]*yvals + right_fit[2]
 
-# Plot up the fake data
-plt.plot(leftx, yvals, 'o', color='red')
-plt.plot(rightx, yvals, 'o', color='blue')
-plt.xlim(0, 1280)
-plt.ylim(0, 720)
-plt.plot(left_fitx, yvals, color='green', linewidth=3)
-plt.plot(right_fitx, yvals, color='green', linewidth=3)
-plt.gca().invert_yaxis() # to visualize as we do the images
+class MeasueCurvature(Findlane):
+    def __init__(self):
+        Findlane.__init__(self)
+        return
+    def fit_lane_lines(self, img,left_pixels, right_pixels):
+        left_fit, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels)
+        right_fit, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels)
+        pts_left = np.concatenate((left_fitx.reshape(-1,1), left_fity.reshape(-1,1)), axis = 1)
+        
+        pts_right = np.flipud(np.concatenate((right_fitx.reshape(-1,1) , right_fity.reshape(-1,1)), axis = 1))
+        pts = np.concatenate((pts_left, pts_right), axis=0)
+        img_fitline = img.copy()
+        cv2.fillPoly(img_fitline, np.int_([pts]), (0,255, 0))
+        return img_fitline
+    def __fit_lane_line(self, img, pixels):
+        img_height = img.shape[0]
+        x = pixels[:,0]
+        y = pixels[:,1]
+        fit = np.polyfit(y, x, 2)
+        fity = np.linspace(y.min(), img_height, num=10)
+        fitx = fit[0]*fity**2 + fit[1]*fity + fit[2]
+        return fit, fity,fitx
 
-plt.show()
+    
+    def run(self):
+        fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
+                  './test_images/straight16.jpg','./test_images/straight17.jpg']
+#         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
+#                   './test_images/test5.jpg','./test_images/test6.jpg']
+#         fnames = ['./test_images/test2.jpg']
+
+        res_imgs = []
+        for fname in fnames:
+            original_img, img, thres_img = self.thresh_one_image(fname)
+            pers_img = self.bird_view(thres_img)
+           
+            img_with_windows,img_left_right,left_pixels, right_pixels= self.locate_lane_pixels(pers_img)
+            img_fitline = self.fit_lane_lines(img_left_right,left_pixels, right_pixels)
+            res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows,img_left_right,img_fitline]))
+        
+        res_imgs = np.array(res_imgs)
+        res_imgs = np.concatenate(res_imgs, axis=0)
+        res_imgs = res_imgs[...,::-1]
+        plt.imshow(res_imgs)
+        plt.show()
+        return
+
+
+
+if __name__ == "__main__":   
+    obj= MeasueCurvature()
+    obj.run()
