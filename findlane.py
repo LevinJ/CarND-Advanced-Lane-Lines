@@ -48,9 +48,16 @@ class Findlane(Transform):
         img_with_windows = img.copy()
         self.__draw_sliding_windows(img_with_windows, peak_ys, self.peak_xs)
         left_pixels, right_pixels = self.__identify_lane_pixles(img, peak_ys, self.peak_xs)
-        return img_with_windows
+        img_left_right = self.__draw_left_right_pixels(img, left_pixels, right_pixels)
+        return img_with_windows, img_left_right,left_pixels, right_pixels
     def __draw_left_right_pixels(self,img, left_pixels, right_pixels):
-        return
+        zero = np.zeros_like(img).astype(np.uint8)
+        left = np.zeros_like(img).astype(np.uint8)
+        right = np.zeros_like(img).astype(np.uint8)
+        left[left_pixels[:,1], left_pixels[:,0]] = 255
+        right[right_pixels[:,1], right_pixels[:,0]] = 255
+        img_left_right = np.dstack((left,right, zero))
+        return img_left_right
     def __identify_lane_pixles(self, img, peak_ys, peak_xs):
         left_pixels = []
         right_pixels =[]
@@ -65,16 +72,16 @@ class Findlane(Transform):
                 y = (y_relative + y1).reshape(-1,1)
                 x = (x_relative + x1).reshape(-1,1)
                 pixels = np.concatenate([x,y], axis = 1)
-                left_pixels.append(pixels) 
+                left_pixels.extend(pixels) 
             if right_x is not None:
                 x1,x2 = right_x
                 y_relative,x_relative = img[y1:y2,x1:x2].nonzero()
                 y = (y_relative + y1).reshape(-1,1)
                 x = (x_relative + x1).reshape(-1,1)
                 pixels = np.concatenate([x,y], axis = 1)
-                right_pixels.append(pixels) 
+                right_pixels.extend(pixels) 
             
-        return left_pixels, right_pixels
+        return np.asarray(left_pixels), np.asarray(right_pixels)
   
     def __draw_sliding_windows(self,img, peak_ys, peak_xs):
         sliding_windows_pts =[]
@@ -143,8 +150,10 @@ class Findlane(Transform):
         
         xs = np.array(list(peak_xs[:,0]) + [sliding_window[0]])
         shiftxs = xs[1:]-xs[0:-1]
+        #when the shfit is small, hold our judegement about the direction of the lane
+        shiftxs[(shiftxs< 3) & (shiftxs>-3)] = 0
         
-        print("shift {}".format(shiftxs))
+#         print("shift {}".format(shiftxs))
         
         if(not self.__is_same_sign(shiftxs[-1], shiftxs[-2])):
             sliding_window = peak_xs[-1] + shiftxs[-2]
@@ -160,7 +169,7 @@ class Findlane(Transform):
         if histogram.sum()==0:
             return None
         try:
-            index = np.sum((histogram/histogram.sum()) * (np.arange(len(histogram)) + 1))
+            index = np.sum((histogram/float(histogram.sum())) * (np.arange(len(histogram)) + 1))
             index = int(index -1)
         except:
             raise Exception('exception in extracting center')
@@ -190,19 +199,19 @@ class Findlane(Transform):
 
     
     def run(self):
-#         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
-#                   './test_images/straight16.jpg','./test_images/straight17.jpg']
+        fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
+                  './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg']
-        fnames = ['./test_images/test2.jpg']
+#         fnames = ['./test_images/test4.jpg']
 
         res_imgs = []
         for fname in fnames:
             original_img, img, thres_img = self.thresh_one_image(fname)
             pers_img = self.bird_view(thres_img)
            
-            img_with_windows = self.locate_lane_pixels(pers_img)
-            res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows]))
+            img_with_windows,img_left_right,_,_ = self.locate_lane_pixels(pers_img)
+            res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows,img_left_right]))
         
         res_imgs = np.array(res_imgs)
         res_imgs = np.concatenate(res_imgs, axis=0)
