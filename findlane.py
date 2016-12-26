@@ -47,8 +47,35 @@ class Findlane(Transform):
         
         img_with_windows = img.copy()
         self.__draw_sliding_windows(img_with_windows, peak_ys, self.peak_xs)
-  
+        left_pixels, right_pixels = self.__identify_lane_pixles(img, peak_ys, self.peak_xs)
         return img_with_windows
+    def __draw_left_right_pixels(self,img, left_pixels, right_pixels):
+        return
+    def __identify_lane_pixles(self, img, peak_ys, peak_xs):
+        left_pixels = []
+        right_pixels =[]
+        for i in range(len(peak_ys)):
+            peak_y = peak_ys[i]
+            y1 = peak_y[0]
+            y2 = peak_y[1]
+            left_x,right_x = peak_xs[i]
+            if left_x is not None:
+                x1,x2 = left_x
+                y_relative,x_relative = img[y1:y2,x1:x2].nonzero()
+                y = (y_relative + y1).reshape(-1,1)
+                x = (x_relative + x1).reshape(-1,1)
+                pixels = np.concatenate([x,y], axis = 1)
+                left_pixels.append(pixels) 
+            if right_x is not None:
+                x1,x2 = right_x
+                y_relative,x_relative = img[y1:y2,x1:x2].nonzero()
+                y = (y_relative + y1).reshape(-1,1)
+                x = (x_relative + x1).reshape(-1,1)
+                pixels = np.concatenate([x,y], axis = 1)
+                right_pixels.append(pixels) 
+            
+        return left_pixels, right_pixels
+  
     def __draw_sliding_windows(self,img, peak_ys, peak_xs):
         sliding_windows_pts =[]
         for i in range(len(peak_ys)):
@@ -167,7 +194,7 @@ class Findlane(Transform):
 #                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg']
-#         fnames = ['./test_images/test5.jpg']
+        fnames = ['./test_images/test2.jpg']
 
         res_imgs = []
         for fname in fnames:
