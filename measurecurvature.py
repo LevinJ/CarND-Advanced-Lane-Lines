@@ -14,17 +14,36 @@ class MeasueCurvature(Findlane):
     def __init__(self):
         Findlane.__init__(self)
         return
-    def fit_lane_lines(self, img,left_pixels, right_pixels):
+    def fit_lane_lines(self, img,left_pixels, right_pixels, lane_pixel_num):
         
-        left_fit, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels)
-        right_fit, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels)
+        _, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels)
+        _, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels)
         pts_left = np.concatenate((left_fitx.reshape(-1,1), left_fity.reshape(-1,1)), axis = 1)
         
         pts_right = np.flipud(np.concatenate((right_fitx.reshape(-1,1) , right_fity.reshape(-1,1)), axis = 1))
         fit_pts = np.concatenate((pts_left, pts_right), axis=0)
         img_fitline = img.copy()
         cv2.fillPoly(img_fitline, np.int_([fit_pts]), (0,255, 0))
+        self.__cal_curvature( img,  left_fity,left_fitx, right_fity,right_fitx,lane_pixel_num)
         return img_fitline,fit_pts
+    def __cal_curvature(self, img,  left_fity,left_fitx, right_fity,right_fitx,lane_pixel_num):
+        img_height = img.shape[0]
+        y_eval = img_height
+        
+        ym_per_pix = 30/float(img_height)
+        xm_per_pix = 3.7/float(lane_pixel_num)
+        
+        left_fit_cr = np.polyfit(left_fity*ym_per_pix, left_fitx*xm_per_pix, 2)
+        right_fit_cr = np.polyfit(right_fity*ym_per_pix, right_fitx*xm_per_pix, 2)
+        
+        left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
+                             /np.absolute(2*left_fit_cr[0])
+        right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
+                                /np.absolute(2*right_fit_cr[0])
+        print(left_curverad, 'm', right_curverad, 'm')
+        
+        
+        return
     def map_back_road(self, img, fit_pts, Minv):
         color_warp = np.zeros_like(img).astype(np.uint8)
         
@@ -55,10 +74,10 @@ class MeasueCurvature(Findlane):
         res_imgs = []
         for fname in fnames:
             original_img, img, thres_img = self.thresh_one_image(fname)
-            pers_img, Minv = self.bird_view(thres_img)
+            pers_img, Minv,lane_pixel_num = self.bird_view(thres_img)
            
             img_with_windows,img_left_right,left_pixels, right_pixels= self.locate_lane_pixels(pers_img)
-            img_fitline, fit_pts = self.fit_lane_lines(img_left_right,left_pixels, right_pixels)
+            img_fitline, fit_pts = self.fit_lane_lines(img_left_right,left_pixels, right_pixels, lane_pixel_num)
             map_back_img = self.map_back_road(img, fit_pts, Minv)
             res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows,img_left_right,img_fitline, map_back_img]))
         

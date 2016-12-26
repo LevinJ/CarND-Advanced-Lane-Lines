@@ -64,6 +64,7 @@ class Transform(Threshold):
         # Given src and dst points, calculate the perspective transform matrix
         M = cv2.getPerspectiveTransform(src, dst)
         Minv = cv2.getPerspectiveTransform(dst, src)
+        lane_pixel_num = width- 2*offset_x
         # Warp the image using OpenCV warpPerspective()
         warped = cv2.warpPerspective(img, M, (width, height))
         
@@ -75,7 +76,7 @@ class Transform(Threshold):
 #         pts = dst.reshape((-1,1,2)).astype(np.int32)
 #         cv2.polylines(warped,[pts],True,(0,0,255),thickness)
         
-        return warped, Minv
+        return warped, Minv,lane_pixel_num
     def show_one_image(self,ax, fname):
         ax1,ax2,ax3 = ax
         img = cv2.imread(fname)
@@ -116,7 +117,7 @@ class Transform(Threshold):
         res_imgs = []
         for fname in fnames:
             original_img, img, thres_img = self.thresh_one_image(fname)
-            pers_img, _ = self.bird_view(thres_img)
+            pers_img, _ , _= self.bird_view(thres_img)
             res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img]))
          
         res_imgs = np.array(res_imgs)
