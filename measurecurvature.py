@@ -15,15 +15,26 @@ class MeasueCurvature(Findlane):
         Findlane.__init__(self)
         return
     def fit_lane_lines(self, img,left_pixels, right_pixels):
+        
         left_fit, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels)
         right_fit, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels)
         pts_left = np.concatenate((left_fitx.reshape(-1,1), left_fity.reshape(-1,1)), axis = 1)
         
         pts_right = np.flipud(np.concatenate((right_fitx.reshape(-1,1) , right_fity.reshape(-1,1)), axis = 1))
-        pts = np.concatenate((pts_left, pts_right), axis=0)
+        fit_pts = np.concatenate((pts_left, pts_right), axis=0)
         img_fitline = img.copy()
-        cv2.fillPoly(img_fitline, np.int_([pts]), (0,255, 0))
-        return img_fitline
+        cv2.fillPoly(img_fitline, np.int_([fit_pts]), (0,255, 0))
+        return img_fitline,fit_pts
+    def map_back_road(self, img, fit_pts, Minv):
+        color_warp = np.zeros_like(img).astype(np.uint8)
+        
+        cv2.fillPoly(color_warp, np.int_([fit_pts]), (0,255, 0))
+        
+        newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0]))
+        
+        result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
+        return result
+    
     def __fit_lane_line(self, img, pixels):
         img_height = img.shape[0]
         x = pixels[:,0]
@@ -44,11 +55,12 @@ class MeasueCurvature(Findlane):
         res_imgs = []
         for fname in fnames:
             original_img, img, thres_img = self.thresh_one_image(fname)
-            pers_img = self.bird_view(thres_img)
+            pers_img, Minv = self.bird_view(thres_img)
            
             img_with_windows,img_left_right,left_pixels, right_pixels= self.locate_lane_pixels(pers_img)
-            img_fitline = self.fit_lane_lines(img_left_right,left_pixels, right_pixels)
-            res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows,img_left_right,img_fitline]))
+            img_fitline, fit_pts = self.fit_lane_lines(img_left_right,left_pixels, right_pixels)
+            map_back_img = self.map_back_road(img, fit_pts, Minv)
+            res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows,img_left_right,img_fitline, map_back_img]))
         
         res_imgs = np.array(res_imgs)
         res_imgs = np.concatenate(res_imgs, axis=0)

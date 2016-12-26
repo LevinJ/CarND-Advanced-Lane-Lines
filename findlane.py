@@ -208,7 +208,7 @@ class Findlane(Transform):
         res_imgs = []
         for fname in fnames:
             original_img, img, thres_img = self.thresh_one_image(fname)
-            pers_img = self.bird_view(thres_img)
+            pers_img, _ = self.bird_view(thres_img)
            
             img_with_windows,img_left_right,_,_ = self.locate_lane_pixels(pers_img)
             res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows,img_left_right]))
