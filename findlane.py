@@ -210,7 +210,7 @@ class Findlane(Transform):
 
         res_imgs = []
         for fname in fnames:
-            original_img, img, thres_img = self.thresh_one_image(fname)
+            original_img, img, thres_img = self.thresh_one_image_fname(fname)
             pers_img, _ ,_= self.bird_view(thres_img)
            
             img_with_windows,img_left_right,_,_ = self.locate_lane_pixels(pers_img)

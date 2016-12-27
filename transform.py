@@ -116,7 +116,7 @@ class Transform(Threshold):
 #         self.test_transform(fnames)
         res_imgs = []
         for fname in fnames:
-            original_img, img, thres_img = self.thresh_one_image(fname)
+            original_img, img, thres_img = self.thresh_one_image_fname(fname)
             pers_img, _ , _= self.bird_view(thres_img)
             res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img]))
          

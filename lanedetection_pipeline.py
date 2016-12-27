@@ -13,8 +13,8 @@ class LaneDetection(Findlane):
        
         return
     
-    def process_image(self, initial_img):
-        original_img, img, thres_img = self.thresh_one_image_2(initial_img)
+    def process_image_BGR(self, initial_img):
+        original_img, img, thres_img = self.thresh_one_image(initial_img)
         pers_img, _ ,_= self.bird_view(thres_img)
        
         img_with_windows,img_left_right,_,_ = self.locate_lane_pixels(pers_img)
@@ -26,7 +26,7 @@ class LaneDetection(Findlane):
         #load the image
         initial_img = self.load_image(img_file_path)
 #         plt.imshow(initial_img)
-        final_img = self.process_image(initial_img)
+        final_img = self.process_image_BGR(initial_img)
 
         img_file_name = os.path.basename(img_file_path)
         new_img_file_path = os.path.dirname(img_file_path) + '/' + os.path.splitext(img_file_name)[0] + '_withlane' + os.path.splitext(img_file_name)[1]
@@ -61,7 +61,7 @@ class LaneDetection(Findlane):
         return
     def test_on_videos(self, input_video, output_video):
         clip1 = VideoFileClip(input_video)
-        white_clip = clip1.fl_image(self.process_image)
+        white_clip = clip1.fl_image(self.process_image_BGR)
         white_clip.write_videofile(output_video, audio=False)
         return
     def run(self):

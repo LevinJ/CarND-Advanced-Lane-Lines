@@ -35,13 +35,34 @@ class Threshold(Calibrarte):
         return binary_output
 
     def stack_image_horizontal(self, imgs):
+        return self.__stack_image_horizontal(imgs, axis = 1)
+    def stack_image_vertical(self, imgs):
+        return self.__stack_image_horizontal(imgs, axis = 0)
+    def __stack_image_horizontal(self, imgs, axis = 1):
+        #first let's make sure all the imge has same size
+        img_sizes = np.empty([len(imgs), 2], dtype=int)
+        for i in range(len(imgs)):
+            img = imgs[i]
+            img_sizes[i] = np.asarray(img.shape[:2])
+        max_img_width = img_sizes[:,1].max()
+        max_img_height = img_sizes[:,0].max()
+        for i in range(len(imgs)):
+            img = imgs[i]
+            img_width = img.shape[1]
+            img_height = img.shape[0]
+            if (img_width == max_img_width) and (img_height == max_img_height):
+                continue
+            imgs[i] = cv2.resize(img, (max_img_width,max_img_height))
+            
+            
+        
         for i in range(len(imgs)):
             img = imgs[i]
             if len(img.shape) == 2:
                 scaled_img = np.uint8(255*img/np.max(img))
                 imgs[i] = cv2.cvtColor(scaled_img, cv2.COLOR_GRAY2BGR)
 #                 plt.imshow(imgs[i][...,::-1])
-        res_img = np.concatenate(imgs, axis=1)
+        res_img = np.concatenate(imgs, axis=axis)
         return res_img
     def mag_thresh(self, img, sobel_kernel=3, mag_thresh=(0, 255)):
     
@@ -85,7 +106,7 @@ class Threshold(Calibrarte):
             binary_output[(absgraddir >= thresh[0]) & (absgraddir <= thresh[1])] = 1
         
         return binary_output
-    def thresh_one_image(self, fname, debug=False):
+    def thresh_one_image_fname(self, fname, debug=False):
         original_image = cv2.imread(fname)
         return self.__thresh_one_image(original_image, debug=debug)
     
@@ -140,10 +161,9 @@ class Threshold(Calibrarte):
             return original_image, image, roi_img
         return  res_img
     
-    def thresh_one_image_2(self, original_image, debug=False):
+    def thresh_one_image(self, original_image, debug=False):
         #input is an RGB image
-        original_image = original_image[...,::-1]
-        self.__thresh_one_image(original_image, debug=debug)
+        return self.__thresh_one_image(original_image, debug=debug)
     def region_of_interest(self, img, vertices):
         """
         Applies an image mask.
@@ -187,7 +207,7 @@ class Threshold(Calibrarte):
           './test_images/test5.jpg','./test_images/test6.jpg']
         res_imgs = []
         for fname in fnames:
-            img = self.thresh_one_image(fname,debug=True)
+            img = self.thresh_one_image_fname(fname,debug=True)
             res_imgs.append(img)
        
         res_imgs = np.array(res_imgs)
