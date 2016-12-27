@@ -34,18 +34,20 @@ class Threshold(Calibrarte):
         # Return the result
         return binary_output
 
-    def stack_image_horizontal(self, imgs):
-        return self.__stack_image_horizontal(imgs, axis = 1)
-    def stack_image_vertical(self, imgs):
-        return self.__stack_image_horizontal(imgs, axis = 0)
-    def __stack_image_horizontal(self, imgs, axis = 1):
+    def stack_image_horizontal(self, imgs, max_img_width = None, max_img_height=None):
+        return self.__stack_image_horizontal(imgs, axis = 1, max_img_width = max_img_width, max_img_height=max_img_height)
+    def stack_image_vertical(self, imgs, max_img_width = None, max_img_height=None):
+        return self.__stack_image_horizontal(imgs, axis = 0, max_img_width = max_img_width, max_img_height=max_img_height)
+    def __stack_image_horizontal(self, imgs, axis = 1, max_img_width = None, max_img_height=None):
         #first let's make sure all the imge has same size
         img_sizes = np.empty([len(imgs), 2], dtype=int)
         for i in range(len(imgs)):
             img = imgs[i]
             img_sizes[i] = np.asarray(img.shape[:2])
-        max_img_width = img_sizes[:,1].max()
-        max_img_height = img_sizes[:,0].max()
+        if max_img_width is None:
+            max_img_width = img_sizes[:,1].max()
+        if max_img_height is None:
+            max_img_height = img_sizes[:,0].max()
         for i in range(len(imgs)):
             img = imgs[i]
             img_width = img.shape[1]

@@ -56,7 +56,10 @@ class Findlane(Transform):
         left = np.zeros_like(img).astype(np.uint8)
         right = np.zeros_like(img).astype(np.uint8)
         left[left_pixels[:,1], left_pixels[:,0]] = 255
-        right[right_pixels[:,1], right_pixels[:,0]] = 255
+        try:
+            right[right_pixels[:,1], right_pixels[:,0]] = 255
+        except:
+            raise Exception('error')
         img_left_right = np.dstack((left,zero,right))
         return img_left_right
     def __identify_lane_pixles(self, img, peak_ys, peak_xs):
@@ -150,8 +153,15 @@ class Findlane(Transform):
             return None
         if (sliding_window[0]<=0) or (sliding_window[1]>=self.img_width):
             return sliding_window
-        
-        xs = np.array(list(peak_xs[:,0]) + [sliding_window[0]])
+        peak_xs_list = peak_xs.tolist()
+        if None in peak_xs_list:
+            # do not detect window if detection once faled at the lower part of the image
+            return None
+        peak_xs = np.asarray(peak_xs_list)
+        try:
+            xs = np.array(list(peak_xs[:,0]) + [sliding_window[0]])
+        except:
+            raise Exception('error')
         shiftxs = xs[1:]-xs[0:-1]
         #when the shfit is small, hold our judegement about the direction of the lane
         shiftxs[(shiftxs< 3) & (shiftxs>-3)] = 0
@@ -159,7 +169,7 @@ class Findlane(Transform):
 #         print("shift {}".format(shiftxs))
         
         if(not self.__is_same_sign(shiftxs[-1], shiftxs[-2])):
-            sliding_window = peak_xs[-1] + shiftxs[-2]
+            sliding_window = (peak_xs[-1] + shiftxs[-2]).tolist()
             print('adjust sliding windows')
         
         
@@ -206,6 +216,7 @@ class Findlane(Transform):
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg']
+        fnames = ['./excpetion_img.jpg']
 #         fnames = ['./test_images/test4.jpg']
 
         res_imgs = []

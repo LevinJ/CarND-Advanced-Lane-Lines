@@ -74,7 +74,7 @@ class MeasueCurvature(Findlane):
         transformed_imgs = self.stack_image_horizontal([pers_img, img_with_windows,img_left_right,img_fitline])
         right_side = self.stack_image_vertical([thres_imgs,transformed_imgs])
         left_side = map_back_img
-        final_img = self.stack_image_horizontal([left_side, right_side])
+        final_img = self.stack_image_horizontal([left_side, right_side], max_img_width = left_side.shape[1], max_img_height= left_side.shape[0])
         
         
         return  final_img
