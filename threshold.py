@@ -87,6 +87,9 @@ class Threshold(Calibrarte):
         return binary_output
     def thresh_one_image(self, fname, debug=False):
         original_image = cv2.imread(fname)
+        return self.__thresh_one_image(original_image, debug=debug)
+    
+    def __thresh_one_image(self, original_image, debug=False):
         image = self.undistort(original_image)
 
         res_imgs = []
@@ -136,6 +139,11 @@ class Threshold(Calibrarte):
         if not debug:
             return original_image, image, roi_img
         return  res_img
+    
+    def thresh_one_image_2(self, original_image, debug=False):
+        #input is an RGB image
+        original_image = original_image[...,::-1]
+        self.__thresh_one_image(original_image, debug=debug)
     def region_of_interest(self, img, vertices):
         """
         Applies an image mask.

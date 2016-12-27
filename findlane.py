@@ -20,7 +20,7 @@ class Findlane(Transform):
 #         plt.imshow(img, cmap='gray')
         img_height = img.shape[0]
         num_histogram = 5
-        y_step = img_height/num_histogram
+        y_step = int(img_height/num_histogram)
         
         peak_ys= []
         end = img_height
@@ -32,8 +32,8 @@ class Findlane(Transform):
         if (len(indexes) != 2):
             raise Exception('unexpected number of peaks')
         sliding_window_width = 200
-        sliding_windows = [(indexes[0]-sliding_window_width/2, indexes[0]+ sliding_window_width/2),
-                           (indexes[1]-sliding_window_width/2, indexes[1]+ sliding_window_width/2)]
+        sliding_windows = [(indexes[0]-int(sliding_window_width/2), indexes[0]+ int(sliding_window_width/2)),
+                           (indexes[1]-int(sliding_window_width/2), indexes[1]+ int(sliding_window_width/2))]
         while end > 0:
             start = end - y_step
             if start < 0:
@@ -51,6 +51,7 @@ class Findlane(Transform):
         img_left_right = self.__draw_left_right_pixels(img, left_pixels, right_pixels)
         return img_with_windows, img_left_right,left_pixels, right_pixels
     def __draw_left_right_pixels(self,img, left_pixels, right_pixels):
+        
         zero = np.zeros_like(img).astype(np.uint8)
         left = np.zeros_like(img).astype(np.uint8)
         right = np.zeros_like(img).astype(np.uint8)
@@ -81,7 +82,9 @@ class Findlane(Transform):
                 pixels = np.concatenate([x,y], axis = 1)
                 right_pixels.extend(pixels) 
             
-        return np.asarray(left_pixels), np.asarray(right_pixels)
+        left_pixels = np.asarray(left_pixels).astype(np.int32)
+        right_pixels = np.asarray(right_pixels).astype(np.int32)
+        return  left_pixels, right_pixels
   
     def __draw_sliding_windows(self,img, peak_ys, peak_xs):
         sliding_windows_pts =[]
@@ -180,7 +183,7 @@ class Findlane(Transform):
 #             print('unexpected peak number')
 #             return None
         indexes = sliding_window[0] + index
-        sliding_windows = [indexes-sliding_window_width/2, indexes+ sliding_window_width/2]
+        sliding_windows = [indexes-int(sliding_window_width/2), indexes+ int(sliding_window_width/2)]
         if sliding_windows[0] < 0:
             sliding_windows[0] = 0
             print('end reached, left side')
