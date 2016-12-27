@@ -15,6 +15,9 @@ class MeasueCurvature(Findlane):
         Findlane.__init__(self)
         return
     def fit_lane_lines(self, img,left_pixels, right_pixels, lane_pixel_num):
+        if (len(left_pixels) == 0 ) or (len(right_pixels) == 0):
+            print("No lines are detected!!")
+            return img,None
         
         _, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels)
         _, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels)
@@ -45,6 +48,8 @@ class MeasueCurvature(Findlane):
         
         return
     def map_back_road(self, img, fit_pts, Minv):
+        if fit_pts is None:
+            return img
         color_warp = np.zeros_like(img).astype(np.uint8)
         
         cv2.fillPoly(color_warp, np.int_([fit_pts]), (0,255, 0))
@@ -95,7 +100,8 @@ class MeasueCurvature(Findlane):
 #                   './test_images/straight16.jpg','./test_images/straight17.jpg']
 #         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
 #                   './test_images/test5.jpg','./test_images/test6.jpg']
-        fnames = ['./test_images/test2.jpg']
+#         fnames = ['./test_images/test2.jpg']
+        fnames = ['./exception_img.jpg']
 
         res_imgs = []
         for fname in fnames:
