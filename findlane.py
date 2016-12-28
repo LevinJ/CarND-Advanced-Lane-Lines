@@ -30,7 +30,8 @@ class Findlane(Transform):
         histogram = np.sum(img[int(img_height/2):], axis=0)
         indexes = detect_peaks(histogram, mph=10, mpd=650)
         if (len(indexes) != 2):
-            raise Exception('unexpected number of peaks')
+            print("unexpected number of peaks!!!")
+            return img, img,[], []
         sliding_window_width = 200
         sliding_windows = [(indexes[0]-int(sliding_window_width/2), indexes[0]+ int(sliding_window_width/2)),
                            (indexes[1]-int(sliding_window_width/2), indexes[1]+ int(sliding_window_width/2))]

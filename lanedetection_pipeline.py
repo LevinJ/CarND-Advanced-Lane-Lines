@@ -25,6 +25,7 @@ class LaneDetection(MeasueCurvature):
             img_BGR = initial_img[...,::-1]
              
             final_img = self.process_image_BGR(img_BGR)
+            final_img = final_img[...,::-1]
             
             self.count = self.count + 1
         except:
@@ -76,6 +77,8 @@ class LaneDetection(MeasueCurvature):
 #         self.test_on_one_image('excpetion_img.jpg')
 #         self.test_on_frame()
         self.test_on_videos('./project_video.mp4','./project.mp4')
+#         self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
+#         self.test_on_videos('./harder_challenge_video.mp4','./harder_challenge.mp4')
 
         plt.show()
         
