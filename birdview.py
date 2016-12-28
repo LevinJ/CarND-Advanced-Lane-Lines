@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from threshold import Threshold
 
 
-class Transform(Threshold):
+class BirdViewTransform(Threshold):
     def __init__(self):
         Threshold.__init__(self)
         return
@@ -113,7 +113,7 @@ class Transform(Threshold):
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg']
-        fnames = ['./exception_img.jpg']
+#         fnames = ['./exception_img.jpg']
 #         self.test_transform(fnames)
         res_imgs = []
         for fname in fnames:
@@ -131,5 +131,5 @@ class Transform(Threshold):
 
 
 if __name__ == "__main__":   
-    obj= Transform()
+    obj= BirdViewTransform()
     obj.run()

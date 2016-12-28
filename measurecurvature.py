@@ -6,13 +6,13 @@ sys.path.insert(0, os.path.abspath('..'))
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from findlane import Findlane
+from locatelanepixels import LocateLanePixel
 import matplotlib.pyplot as plt
 
 
-class MeasueCurvature(Findlane):
+class MeasueCurvature(LocateLanePixel):
     def __init__(self):
-        Findlane.__init__(self)
+        LocateLanePixel.__init__(self)
         return
     def fit_lane_lines(self, img,left_pixels, right_pixels, lane_pixel_num):
         plt.imshow(img[...,::-1])

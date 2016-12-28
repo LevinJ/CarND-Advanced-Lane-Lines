@@ -6,15 +6,15 @@ sys.path.insert(0, os.path.abspath('..'))
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-from transform import Transform
+from birdview import BirdViewTransform
 from scipy import signal
 import matplotlib.pyplot as plt
 from detect_peaks import detect_peaks
 
 
-class Findlane(Transform):
+class LocateLanePixel(BirdViewTransform):
     def __init__(self):
-        Transform.__init__(self)
+        BirdViewTransform.__init__(self)
         return
     def locate_lane_pixels(self, img):
 #         plt.imshow(img, cmap='gray')
@@ -238,5 +238,5 @@ class Findlane(Transform):
 
 
 if __name__ == "__main__":   
-    obj= Findlane()
+    obj= LocateLanePixel()
     obj.run()
