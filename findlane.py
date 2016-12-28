@@ -171,7 +171,7 @@ class Findlane(Transform):
         
         if(not self.__is_same_sign(shiftxs[-1], shiftxs[-2])):
             sliding_window = (peak_xs[-1] + shiftxs[-2]).tolist()
-            print('adjust sliding windows')
+#             print('adjust sliding windows')
         
         
         return sliding_window
@@ -197,10 +197,10 @@ class Findlane(Transform):
         sliding_windows = [indexes-int(sliding_window_width/2), indexes+ int(sliding_window_width/2)]
         if sliding_windows[0] < 0:
             sliding_windows[0] = 0
-            print('end reached, left side')
+#             print('end reached, left side')
         if sliding_windows[1] > img.shape[1]:
             sliding_windows[1] = img.shape[1]
-            print('end reached, right side')
+#             print('end reached, right side')
             
         return sliding_windows
     def __show_rectangel(self,img):
@@ -217,7 +217,7 @@ class Findlane(Transform):
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg']
-        fnames = ['./exception_img.jpg']
+#         fnames = ['./exception_img.jpg']
 #         fnames = ['./test_images/test4.jpg']
 
         res_imgs = []

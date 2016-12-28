@@ -15,6 +15,7 @@ class MeasueCurvature(Findlane):
         Findlane.__init__(self)
         return
     def fit_lane_lines(self, img,left_pixels, right_pixels, lane_pixel_num):
+        plt.imshow(img[...,::-1])
         if (len(left_pixels) == 0 ) or (len(right_pixels) == 0):
             print("No lines are detected!!")
             return img,None
@@ -28,7 +29,26 @@ class MeasueCurvature(Findlane):
         img_fitline = img.copy()
         cv2.fillPoly(img_fitline, np.int_([fit_pts]), (0,255, 0))
         self.__cal_curvature( img,  left_fity,left_fitx, right_fity,right_fitx,lane_pixel_num)
+        self.__cal_shift_from_center(img, left_fitx, right_fitx, lane_pixel_num)
         return img_fitline,fit_pts
+    def __cal_shift_from_center(self, img,  left_fitx, right_fitx,lane_pixel_num):
+        img_width = img.shape[1]
+        xm_per_pix = 3.7/float(lane_pixel_num)
+        left_bottom_x = left_fitx[-1]
+        right_bottom_x = right_fitx[-1]
+        lane_center = (left_bottom_x + right_bottom_x)/2.0
+        car_center = img_width/2.0
+        shift = (car_center - lane_center) * xm_per_pix
+        if shift > 0:
+            shift_info = 'Vehicle is {:.2f}m right of center'.format(abs(shift))
+        else:
+            shift_info =  'Vehicle is {:.2f}m left of center'.format(abs(shift))
+        print(shift_info)
+        
+        self.shift = shift
+        self.shift_info = shift_info
+        return 
+    
     def __cal_curvature(self, img,  left_fity,left_fitx, right_fity,right_fitx,lane_pixel_num):
         img_height = img.shape[0]
         y_eval = img_height
@@ -39,11 +59,13 @@ class MeasueCurvature(Findlane):
         left_fit_cr = np.polyfit(left_fity*ym_per_pix, left_fitx*xm_per_pix, 2)
         right_fit_cr = np.polyfit(right_fity*ym_per_pix, right_fitx*xm_per_pix, 2)
         
-        left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
+        self.left_curvature  = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) \
                              /np.absolute(2*left_fit_cr[0])
-        right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
+        self.right_curvature  = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) \
                                 /np.absolute(2*right_fit_cr[0])
-        print(left_curverad, 'm', right_curverad, 'm')
+        self.average_curvature = (self.left_curvature  + self.right_curvature )/2.0
+        self.curvature_info = "Radius of Curvature is {:.0f}m".format(self.average_curvature)
+        print(self.curvature_info)
         
         
         return
@@ -57,6 +79,10 @@ class MeasueCurvature(Findlane):
         newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0]))
         
         result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        cv2.putText(result,self.curvature_info,(100,50), font, 1,(255,255,255),2)
+        cv2.putText(result,self.shift_info,(100,90), font, 1,(255,255,255),2)
         return result
     
     def __fit_lane_line(self, img, pixels):
@@ -98,10 +124,10 @@ class MeasueCurvature(Findlane):
     def run(self):
 #         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
 #                   './test_images/straight16.jpg','./test_images/straight17.jpg']
-#         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
-#                   './test_images/test5.jpg','./test_images/test6.jpg']
+        fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
+                  './test_images/test5.jpg','./test_images/test6.jpg']
 #         fnames = ['./test_images/test2.jpg']
-        fnames = ['./exception_img.jpg']
+#         fnames = ['./exception_img.jpg']
 
         res_imgs = []
         for fname in fnames:
