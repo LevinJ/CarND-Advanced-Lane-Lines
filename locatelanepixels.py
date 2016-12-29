@@ -32,7 +32,7 @@ class LocateLanePixel(BirdViewTransform):
         if (len(indexes) != 2):
             print("unexpected number of peaks!!!")
             return img, img,[], []
-        sliding_window_width = 200
+        sliding_window_width = 160
         sliding_windows = [(indexes[0]-int(sliding_window_width/2), indexes[0]+ int(sliding_window_width/2)),
                            (indexes[1]-int(sliding_window_width/2), indexes[1]+ int(sliding_window_width/2))]
         while end > 0:
@@ -40,7 +40,7 @@ class LocateLanePixel(BirdViewTransform):
             if start < 0:
                 start = 0
             peak_ys.append((start, end))
-            sliding_windows = self.__locate_true_centers(img, (start, end), sliding_windows)
+            sliding_windows = self.__locate_true_centers(img, (start, end), self.__get_initial_sliding_windows(sliding_windows, img))
             self.peak_xs.append(sliding_windows)
             end = end - y_step
         
@@ -51,6 +51,36 @@ class LocateLanePixel(BirdViewTransform):
         left_pixels, right_pixels = self.__identify_lane_pixles(img, peak_ys, self.peak_xs)
         img_left_right = self.__draw_left_right_pixels(img, left_pixels, right_pixels)
         return img_with_windows, img_left_right,left_pixels, right_pixels
+    def __get_initial_sliding_windows(self, sliding_windows, img):
+        if len(self.peak_xs) <= 1:
+            #if this is the first sliding windows, then just return
+            return sliding_windows
+        new_sliding_windows = []
+        for i in range(len(sliding_windows)):
+            new_sliding_window = self.__get_intial_sliding_window(sliding_windows[i], np.array(self.peak_xs)[:,i], img)
+            new_sliding_windows.append(new_sliding_window)
+        
+        return  new_sliding_windows
+   
+    def __get_intial_sliding_window(self, sliding_window, peak_xs, img):
+        peak_xs_list = peak_xs.tolist()
+        if None in peak_xs_list:
+            # do not detect window if detection once faled at the lower part of the image
+            return sliding_window
+        peak_xs = np.asarray(peak_xs_list)
+        xs = np.array(list(peak_xs[:,0]))
+        shiftxs = xs[1:]-xs[0:-1]
+        #when the shfit is small, hold our judegement about the direction of the lane
+        shiftxs[(shiftxs< 3) & (shiftxs>-3)] = 0
+        
+        sliding_window = [sliding_window[0] + shiftxs[-1], sliding_window[1]+ shiftxs[-1]]
+        if sliding_window[0] < 0:
+            sliding_window[0] = 0
+#             print('end reached, left side')
+        if sliding_window[1] > img.shape[1]:
+            sliding_window[1] = img.shape[1]
+       
+        return sliding_window
     def __draw_left_right_pixels(self,img, left_pixels, right_pixels):
         
         zero = np.zeros_like(img).astype(np.uint8)
@@ -171,7 +201,7 @@ class LocateLanePixel(BirdViewTransform):
         
         if(not self.__is_same_sign(shiftxs[-1], shiftxs[-2])):
             sliding_window = (peak_xs[-1] + shiftxs[-2]).tolist()
-#             print('adjust sliding windows')
+            print('adjust sliding windows')
         
         
         return sliding_window
@@ -216,17 +246,17 @@ class LocateLanePixel(BirdViewTransform):
         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
-                  './test_images/test5.jpg','./test_images/test6.jpg']
+                  './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
 #         fnames = ['./exception_img.jpg']
-#         fnames = ['./test_images/test4.jpg']
+        fnames = ['./test_images/test5.jpg']
 
         res_imgs = []
         for fname in fnames:
-            original_img, img, thres_img = self.thresh_one_image_fname(fname)
+            original_img, img, color_combined, thres_img  = self.thresh_one_image_fname(fname)
             pers_img, _ ,_= self.bird_view(thres_img)
            
             img_with_windows,img_left_right,_,_ = self.locate_lane_pixels(pers_img)
-            res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows,img_left_right]))
+            res_imgs.append(self.stack_image_horizontal([original_img, img, color_combined, thres_img, pers_img, img_with_windows,img_left_right]))
         
         res_imgs = np.array(res_imgs)
         res_imgs = np.concatenate(res_imgs, axis=0)

@@ -143,16 +143,15 @@ class Threshold(Calibrarte):
         combined[(gradx == 1) | (s_color == 1)] = 1
         res_imgs.append(combined)
         
-        
-        color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
-        res_imgs.append(color_combined)
-#         
-        
         # region of interest
         top_x_gap = 50
-        bottom_x_gap = 250
-#         vertices = np.array([[(600-top_x_gap,451), (690 + top_x_gap,451), (1165+bottom_x_gap,728),(240-bottom_x_gap,728)]], dtype=np.int32)
+        bottom_x_gap = 150
         vertices = np.array([[(600-top_x_gap,451), (690 + top_x_gap,451), (1165 + bottom_x_gap,728),(240-bottom_x_gap,728)]], dtype=np.int32)
+        
+        color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
+        cv2.polylines(color_combined, vertices, color=(0,0,255),isClosed=True,thickness=6)
+        res_imgs.append(color_combined)
+        
         roi_img = self.region_of_interest(combined, vertices)
         res_imgs.append(roi_img)
         
@@ -160,7 +159,7 @@ class Threshold(Calibrarte):
         res_img = self.stack_image_horizontal(res_imgs)
         
         if not debug:
-            return original_image, image, roi_img
+            return original_image, image, color_combined, roi_img
         return  res_img
     
     def thresh_one_image(self, original_image, debug=False):
@@ -205,8 +204,11 @@ class Threshold(Calibrarte):
         binary[(R > thresh[0]) & (R <= thresh[1])] = 1
         return binary
     def run(self):
+        fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
+                  './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/signs_vehicles_xygrad.png','./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg',
-          './test_images/test5.jpg','./test_images/test6.jpg']
+          './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
+#         fnames = ['./exception_img.jpg']
         res_imgs = []
         for fname in fnames:
             img = self.thresh_one_image_fname(fname,debug=True)

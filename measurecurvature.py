@@ -94,14 +94,14 @@ class MeasueCurvature(LocateLanePixel):
         fitx = fit[0]*fity**2 + fit[1]*fity + fit[2]
         return fit, fity,fitx
     def process_image_BGR(self, initial_img):
-        original_img, img, thres_img = self.thresh_one_image(initial_img)
+        original_img, img, color_combined, thres_img  = self.thresh_one_image(initial_img)
         pers_img, Minv,lane_pixel_num = self.bird_view(thres_img)
        
         img_with_windows,img_left_right,left_pixels, right_pixels= self.locate_lane_pixels(pers_img)
         img_fitline, fit_pts = self.fit_lane_lines(img_left_right,left_pixels, right_pixels, lane_pixel_num)
         map_back_img = self.map_back_road(img, fit_pts, Minv)
         
-        thres_imgs = self.stack_image_horizontal([original_img, img, thres_img])
+        thres_imgs = self.stack_image_horizontal([original_img, img, color_combined, thres_img])
         transformed_imgs = self.stack_image_horizontal([pers_img, img_with_windows,img_left_right,img_fitline])
         right_side = self.stack_image_vertical([thres_imgs,transformed_imgs])
         left_side = map_back_img
@@ -111,21 +111,21 @@ class MeasueCurvature(LocateLanePixel):
         return  final_img
     def process_image_fname(self, fname):
      
-        original_img, img, thres_img = self.thresh_one_image_fname(fname)
+        original_img, img, color_combined, thres_img = self.thresh_one_image_fname(fname)
         pers_img, Minv,lane_pixel_num = self.bird_view(thres_img)
        
         img_with_windows,img_left_right,left_pixels, right_pixels= self.locate_lane_pixels(pers_img)
         img_fitline, fit_pts = self.fit_lane_lines(img_left_right,left_pixels, right_pixels, lane_pixel_num)
         map_back_img = self.map_back_road(img, fit_pts, Minv)
      
-        return self.stack_image_horizontal([original_img, img, thres_img, pers_img, img_with_windows,img_left_right,img_fitline, map_back_img])
+        return self.stack_image_horizontal([original_img, img, color_combined, thres_img, pers_img, img_with_windows,img_left_right,img_fitline, map_back_img])
 
     
     def run(self):
 #         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
 #                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
-                  './test_images/test5.jpg','./test_images/test6.jpg']
+                  './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
 #         fnames = ['./test_images/test2.jpg']
 #         fnames = ['./exception_img.jpg']
 

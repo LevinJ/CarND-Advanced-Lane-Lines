@@ -112,14 +112,14 @@ class BirdViewTransform(Threshold):
         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
-                  './test_images/test5.jpg','./test_images/test6.jpg']
+                  './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
 #         fnames = ['./exception_img.jpg']
 #         self.test_transform(fnames)
         res_imgs = []
         for fname in fnames:
-            original_img, img, thres_img = self.thresh_one_image_fname(fname)
+            original_img, img, color_combined, thres_img = self.thresh_one_image_fname(fname)
             pers_img, _ , _= self.bird_view(thres_img)
-            res_imgs.append(self.stack_image_horizontal([original_img, img, thres_img, pers_img]))
+            res_imgs.append(self.stack_image_horizontal([original_img, img, color_combined, thres_img, pers_img]))
          
         res_imgs = np.array(res_imgs)
         res_imgs = np.concatenate(res_imgs, axis=0)

@@ -66,18 +66,27 @@ class LaneDetection(MeasueCurvature):
         white_clip.write_videofile(output_video, audio=False)
         return
     def test_on_frame(self):
-        clip = VideoFileClip('./project_video.mp4')
-        initial_img = clip.get_frame(879)
-        initial_img = initial_img[...,::-1]
+        clip = VideoFileClip('./challenge_video.mp4')
+        for img in clip.iter_frames():
+            if self.count == 0:
+                initial_img = img
+                plt.imsave('exception_img.jpg', initial_img)
+                break
+            else:
+                self.count = self.count + 1
+            
+            
+        
+#         initial_img = initial_img[...,::-1]
          
-        final_img = self.process_image_BGR(initial_img)
+#         final_img = self.process_image_BGR(initial_img)
         
         return
     def run(self):
 #         self.test_on_one_image('excpetion_img.jpg')
-#         self.test_on_frame()
+        self.test_on_frame()
 #         self.test_on_videos('./project_video.mp4','./project.mp4')
-        self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
+#         self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
 #         self.test_on_videos('./harder_challenge_video.mp4','./harder_challenge.mp4')
 
         plt.show()
