@@ -1,7 +1,6 @@
 
 import sys
 import os
-# from _pickle import dump
 sys.path.insert(0, os.path.abspath('..'))
 
 import numpy as np
@@ -29,16 +28,42 @@ class Lines():
         self.allx = None  
         #y values for detected line pixels
         self.ally = None
+        
+        
+        self.last_fitx = None
+        self.last_fity = None
+        self.last_fit = None
+    def add_last_fit(self, fit, fity, fitx):
+        self.last_fitx = fitx
+        self.last_fity = fity
+        self.last_fit = fit
+        self.recent_xfitted.append(self.last_fitx)
+        return
+    
+    
 
 
 class FrameTracking():
     def __init__(self):
-        self.use_frame_tracking = True
-        self.last_frame_confident = True
+        self.enable_frame_tracking = True
+
         self.left_lines = Lines()
-        self.right_linges = Lines()
+        self.right_lines = Lines()
+        self.last_roi = None
 
         return
+    def add_last_roi(self, roi):
+        self.last_roi = roi
+        return
+    def __is_last_frame_confident(self):
+        return self.left_lines.detected and self.right_lines.detected
+    def use_last_left_lane_locate_pixels(self):
+        
+        return self.enable_frame_tracking and self.__is_last_frame_confident()
+    def use_last_right_lane_locate_pixels(self):
+        return  self.enable_frame_tracking and self.__is_last_frame_confident()
+    def use_last_lane_area_as_roi(self):
+        return self.enable_frame_tracking and self.__is_last_frame_confident()
  
         
     def run(self):

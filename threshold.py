@@ -8,6 +8,7 @@ import cv2
 import matplotlib.pyplot as plt
 from calibrate import Calibrarte
 import matplotlib.image as mpimg
+from frametracking import g_frame_tracking
 
 
 class Threshold(Calibrarte):
@@ -144,17 +145,14 @@ class Threshold(Calibrarte):
         res_imgs.append(combined)
         
         # region of interest
-        top_x_gap = 50
-        bottom_x_gap = 150
-        vertices = np.array([[(600-top_x_gap,451), (690 + top_x_gap,451), (1165 + bottom_x_gap,728),(240-bottom_x_gap,728)]], dtype=np.int32)
+        
         
         color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
-        cv2.polylines(color_combined, vertices, color=(0,0,255),isClosed=True,thickness=6)
-        res_imgs.append(color_combined)
         
-        roi_img = self.region_of_interest(combined, vertices)
-        res_imgs.append(roi_img)
-        
+        if g_frame_tracking.use_last_lane_area_as_roi():
+            roi_img = self.__region_of_interest_last_lane_area(res_imgs, color_combined, combined)
+        else:
+            roi_img = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
         
         res_img = self.stack_image_horizontal(res_imgs)
         
@@ -165,7 +163,25 @@ class Threshold(Calibrarte):
     def thresh_one_image(self, original_image, debug=False):
         #input is an RGB image
         return self.__thresh_one_image(original_image, debug=debug)
-    def region_of_interest(self, img, vertices):
+    def __region_of_interest_last_lane_area(self, res_imgs,color_combined, combined):
+        mask = g_frame_tracking.last_roi
+        color_combined = cv2.bitwise_and(color_combined, mask)
+        res_imgs.append(color_combined)
+        
+        roi_img = cv2.bitwise_and(combined, mask[:,:,0])
+        res_imgs.append(roi_img)
+        return roi_img
+    def __region_of_interest_fixed(self, res_imgs,color_combined, combined):
+        top_x_gap = 50
+        bottom_x_gap = 150
+        vertices = np.array([[(600-top_x_gap,451), (690 + top_x_gap,451), (1165 + bottom_x_gap,728),(240-bottom_x_gap,728)]], dtype=np.int32)
+        cv2.polylines(color_combined, vertices, color=(0,0,255),isClosed=True,thickness=6)
+        res_imgs.append(color_combined)
+        
+        roi_img = self.__region_of_interest(combined, vertices)
+        res_imgs.append(roi_img)
+        return roi_img
+    def __region_of_interest(self, img, vertices):
         """
         Applies an image mask.
         

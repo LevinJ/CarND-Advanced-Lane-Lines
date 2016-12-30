@@ -8,6 +8,7 @@ import cv2
 import matplotlib.pyplot as plt
 from locatelanepixels import LocateLanePixel
 import matplotlib.pyplot as plt
+from frametracking import g_frame_tracking
 
 
 class MeasueCurvature(LocateLanePixel):
@@ -17,20 +18,35 @@ class MeasueCurvature(LocateLanePixel):
     def fit_lane_lines(self, img,left_pixels, right_pixels, lane_pixel_num):
         plt.imshow(img[...,::-1])
         if (len(left_pixels) == 0 ) or (len(right_pixels) == 0):
+            g_frame_tracking.left_lines.detected = False
+            g_frame_tracking.left_lines.detected = False
             print("No lines are detected!!")
             return img,None
+        g_frame_tracking.left_lines.detected = True
+        g_frame_tracking.right_lines.detected = True
+        left_fit, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels)
+        right_fit, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels)
+        g_frame_tracking.left_lines.add_last_fit(left_fit, left_fity,left_fitx)
+        g_frame_tracking.right_lines.add_last_fit(right_fit, right_fity,right_fitx)
         
-        _, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels)
-        _, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels)
-        pts_left = np.concatenate((left_fitx.reshape(-1,1), left_fity.reshape(-1,1)), axis = 1)
+
+        self.left_fity = left_fity
+        self.left_fitx = left_fitx
+        self.right_fity = right_fity
+        self.right_fitx = right_fitx
         
-        pts_right = np.flipud(np.concatenate((right_fitx.reshape(-1,1) , right_fity.reshape(-1,1)), axis = 1))
-        fit_pts = np.concatenate((pts_left, pts_right), axis=0)
+        fit_pts= self.__concat_fit_pts(left_fity, left_fitx, right_fity, right_fitx)
         img_fitline = img.copy()
         cv2.fillPoly(img_fitline, np.int_([fit_pts]), (0,255, 0))
         self.__cal_curvature( img,  left_fity,left_fitx, right_fity,right_fitx,lane_pixel_num)
         self.__cal_shift_from_center(img, left_fitx, right_fitx, lane_pixel_num)
         return img_fitline,fit_pts
+    def __concat_fit_pts(self, left_fity,left_fitx,right_fity,right_fitx):
+        pts_left = np.concatenate((left_fitx.reshape(-1,1), left_fity.reshape(-1,1)), axis = 1)
+        
+        pts_right = np.flipud(np.concatenate((right_fitx.reshape(-1,1) , right_fity.reshape(-1,1)), axis = 1))
+        fit_pts = np.concatenate((pts_left, pts_right), axis=0)
+        return fit_pts
     def __cal_shift_from_center(self, img,  left_fitx, right_fitx,lane_pixel_num):
         img_width = img.shape[1]
         xm_per_pix = 3.7/float(lane_pixel_num)
@@ -69,6 +85,26 @@ class MeasueCurvature(LocateLanePixel):
         
         
         return
+    def generate_roi_area(self, img, Minv):
+        left_fity = self.left_fity 
+        left_fitx = self.left_fitx
+        right_fity = self.right_fity
+        right_fitx = self.right_fitx
+        left_fitx = left_fitx - 50
+        right_fity = right_fity + 50
+        fit_pts = self.__concat_fit_pts(left_fity, left_fitx, right_fity, right_fitx)
+        
+        color_warp = np.zeros_like(img).astype(np.uint8)
+        
+        cv2.fillPoly(color_warp, np.int_([fit_pts]), (0,255, 0))
+        
+        last_roi = color_warp.copy()
+        cv2.fillPoly(last_roi, np.int_([fit_pts]), (255,255, 255))
+        g_frame_tracking.add_last_roi(last_roi)
+        plt.imshow(last_roi[...,::-1])
+        
+       
+        return 
     def map_back_road(self, img, fit_pts, Minv):
         if fit_pts is None:
             return img
@@ -83,6 +119,8 @@ class MeasueCurvature(LocateLanePixel):
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(result,self.curvature_info,(100,50), font, 1,(255,255,255),2)
         cv2.putText(result,self.shift_info,(100,90), font, 1,(255,255,255),2)
+        
+        self.generate_roi_area(img, Minv)
         return result
     
     def __fit_lane_line(self, img, pixels):

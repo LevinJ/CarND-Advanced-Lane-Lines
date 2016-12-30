@@ -245,10 +245,10 @@ class LocateLanePixel(BirdViewTransform):
     def run(self):
         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
-        fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
-                  './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
+#         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
+#                   './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
 #         fnames = ['./exception_img.jpg']
-        fnames = ['./test_images/test5.jpg']
+#         fnames = ['./test_images/test5.jpg']
 
         res_imgs = []
         for fname in fnames:
