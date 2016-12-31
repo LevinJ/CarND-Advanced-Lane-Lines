@@ -40,7 +40,7 @@ class LocateLanePixel(BirdViewTransform):
             if start < 0:
                 start = 0
             peak_ys.append((start, end))
-            sliding_windows = self.__locate_true_centers(img, (start, end), self.__get_initial_sliding_windows(sliding_windows, img))
+            sliding_windows = self.__fine_tune_sliding_windows(img, (start, end), self.__get_initial_sliding_windows(sliding_windows, img))
             self.peak_xs.append(sliding_windows)
             end = end - y_step
         
@@ -79,6 +79,11 @@ class LocateLanePixel(BirdViewTransform):
 #             print('end reached, left side')
         if sliding_window[1] > img.shape[1]:
             sliding_window[1] = img.shape[1]
+        #discard some very small or invalid sliding windows
+        if sliding_window[1]- sliding_window[0] <= 10:
+            return None
+        
+        
        
         return sliding_window
     def __draw_left_right_pixels(self,img, left_pixels, right_pixels):
@@ -144,16 +149,19 @@ class LocateLanePixel(BirdViewTransform):
             
         
         return
-    def __locate_true_centers(self, img, peak_y, sliding_windows):
+    def __fine_tune_sliding_windows(self, img, peak_y, sliding_windows):
         new_sliding_windows = []
         for sliding_window in sliding_windows:
-            new_window = self.__locate_true_center(img, peak_y, sliding_window)
+            new_window = self.__fine_tune_sliding_window(img, peak_y, sliding_window)
             for _ in range(3):
                 if new_window is not None:
-                    res_window = self.__locate_true_center(img, peak_y, new_window)
-                    if sum(res_window) == sum(new_window):
-                        #if the slidig windows has no adjustment, then no longer fine tune
-                        break
+                    res_window = self.__fine_tune_sliding_window(img, peak_y, new_window)
+                    try:
+                        if sum(res_window) == sum(new_window):
+                            #if the slidig windows has no adjustment, then no longer fine tune
+                            break
+                    except:
+                        raise
                     new_window = res_window 
             new_sliding_windows.append(new_window)
         return self.__adjust_sliding_windows(new_sliding_windows)
@@ -205,7 +213,7 @@ class LocateLanePixel(BirdViewTransform):
         
         
         return sliding_window
-    def __locate_true_center(self, img, peak_y, sliding_window):
+    def __fine_tune_sliding_window(self, img, peak_y, sliding_window):
         if sliding_window is None:
             return None
         sliding_window_width = sliding_window[1] - sliding_window[0]
@@ -219,10 +227,7 @@ class LocateLanePixel(BirdViewTransform):
             raise Exception('exception in extracting center')
         
 
-#         indexes = detect_peaks(histogram, mph=1, mpd=650)
-#         if len(indexes) != 1:
-#             print('unexpected peak number')
-#             return None
+
         indexes = sliding_window[0] + index
         sliding_windows = [indexes-int(sliding_window_width/2), indexes+ int(sliding_window_width/2)]
         if sliding_windows[0] < 0:
@@ -230,6 +235,9 @@ class LocateLanePixel(BirdViewTransform):
 #             print('end reached, left side')
         if sliding_windows[1] > img.shape[1]:
             sliding_windows[1] = img.shape[1]
+        
+        if sliding_windows[0] >= sliding_windows[1]:
+            return sliding_window
 #             print('end reached, right side')
             
         return sliding_windows
@@ -247,7 +255,7 @@ class LocateLanePixel(BirdViewTransform):
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
 #         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
 #                   './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
-#         fnames = ['./exception_img.jpg']
+        fnames = ['./exception_img.jpg']
 #         fnames = ['./test_images/test5.jpg']
 
         res_imgs = []

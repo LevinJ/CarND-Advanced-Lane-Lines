@@ -24,8 +24,9 @@ class MeasueCurvature(LocateLanePixel):
             return img,None
         g_frame_tracking.left_lines.detected = True
         g_frame_tracking.right_lines.detected = True
-        left_fit, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels)
-        right_fit, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels)
+        y_min = min(left_pixels[:,1].min(), right_pixels[:,1].min())
+        left_fit, left_fity,left_fitx = self.__fit_lane_line(img, left_pixels,y_min)
+        right_fit, right_fity,right_fitx = self.__fit_lane_line(img, right_pixels,y_min)
         g_frame_tracking.left_lines.add_last_fit(left_fit, left_fity,left_fitx)
         g_frame_tracking.right_lines.add_last_fit(right_fit, right_fity,right_fitx)
         
@@ -114,21 +115,23 @@ class MeasueCurvature(LocateLanePixel):
         
         newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0]))
         
+#         plt.imsave('roi_img.jpg', newwarp[...,::-1])
+        
         result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         cv2.putText(result,self.curvature_info,(100,50), font, 1,(255,255,255),2)
         cv2.putText(result,self.shift_info,(100,90), font, 1,(255,255,255),2)
         
-        self.generate_roi_area(img, Minv)
+#         self.generate_roi_area(img, Minv)
         return result
     
-    def __fit_lane_line(self, img, pixels):
+    def __fit_lane_line(self, img, pixels,y_min):
         img_height = img.shape[0]
         x = pixels[:,0]
         y = pixels[:,1]
         fit = np.polyfit(y, x, 2)
-        fity = np.linspace(y.min(), img_height, num=10)
+        fity = np.linspace(y_min, img_height, num=10)
         fitx = fit[0]*fity**2 + fit[1]*fity + fit[2]
         return fit, fity,fitx
     def process_image_BGR(self, initial_img):
@@ -164,8 +167,8 @@ class MeasueCurvature(LocateLanePixel):
 #                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
-#         fnames = ['./test_images/test2.jpg']
-#         fnames = ['./exception_img.jpg']
+        fnames = ['./test_images/test2.jpg']
+        fnames = ['./exception_img2.jpg']
 
         res_imgs = []
         for fname in fnames:

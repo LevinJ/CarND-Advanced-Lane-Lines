@@ -45,7 +45,7 @@ class Lines():
 
 class FrameTracking():
     def __init__(self):
-        self.enable_frame_tracking = True
+        self.enable_frame_tracking = False
 
         self.left_lines = Lines()
         self.right_lines = Lines()

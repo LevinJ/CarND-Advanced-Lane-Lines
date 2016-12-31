@@ -13,7 +13,7 @@ class LaneDetection(MeasueCurvature):
         MeasueCurvature.__init__(self)
         self.count = 0
         self.debug_frame = False
-        self.debug_frame_id = 879
+        self.debug_frame_id = 1178
        
         return
     
@@ -23,6 +23,8 @@ class LaneDetection(MeasueCurvature):
                 self.count = self.count + 1
                 return initial_img
             img_BGR = initial_img[...,::-1]
+            
+            print('frame {}'.format(self.count))
              
             final_img = self.process_image_BGR(img_BGR)
             final_img = final_img[...,::-1]
@@ -31,8 +33,6 @@ class LaneDetection(MeasueCurvature):
         except:
             plt.imsave('exception_img.jpg', initial_img)
             raise 
-        
-        plt.imshow(final_img)
         return  final_img
 
     
@@ -67,9 +67,10 @@ class LaneDetection(MeasueCurvature):
         white_clip.write_videofile(output_video, audio=False)
         return
     def test_on_frame(self):
-        clip = VideoFileClip('./challenge_video.mp4')
+        clip = VideoFileClip('./project_video.mp4')
+        initial_img = None
         for img in clip.iter_frames():
-            if self.count == 0:
+            if self.count == 1178:
                 initial_img = img
                 plt.imsave('exception_img.jpg', initial_img)
                 break
@@ -77,17 +78,17 @@ class LaneDetection(MeasueCurvature):
                 self.count = self.count + 1
             
             
+          
+        img_BGR = initial_img[...,::-1]
+          
+        final_img = self.process_image_BGR(img_BGR)
         
-#         initial_img = initial_img[...,::-1]
-         
-#         final_img = self.process_image_BGR(initial_img)
-        
-        return
+        return final_img
     def run(self):
 #         self.test_on_one_image('excpetion_img.jpg')
 #         self.test_on_frame()
-#         self.test_on_videos('./project_video.mp4','./project.mp4')
-        self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
+        self.test_on_videos('./project_video.mp4','./project.mp4')
+#         self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
 #         self.test_on_videos('./harder_challenge_video.mp4','./harder_challenge.mp4')
 
         plt.show()
