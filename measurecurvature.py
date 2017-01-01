@@ -140,13 +140,13 @@ class MeasueCurvature(LocateLanePixel):
         original_img, img, color_combined, thres_img  = self.thresh_one_image(initial_img)
         pers_img, Minv,lane_pixel_num = self.bird_view(thres_img)
        
-        img_with_windows,img_left_right,left_pixels, right_pixels= self.locate_lane_pixels(pers_img)
+        img_with_windows,img_left_right,left_pixels, right_pixels,hist_img= self.locate_lane_pixels(pers_img)
         img_fitline, fit_pts = self.fit_lane_lines(img_left_right,left_pixels, right_pixels, lane_pixel_num)
         map_back_img = self.map_back_road(img, fit_pts, Minv)
         
         thres_imgs = self.stack_image_horizontal([original_img, img, color_combined, thres_img])
         transformed_imgs = self.stack_image_horizontal([pers_img, img_with_windows,img_left_right,img_fitline])
-        right_side = self.stack_image_vertical([thres_imgs,transformed_imgs])
+        right_side = self.stack_image_vertical([thres_imgs,transformed_imgs,hist_img])
         left_side = map_back_img
         final_img = self.stack_image_horizontal([left_side, right_side], max_img_width = left_side.shape[1], max_img_height= left_side.shape[0])
         
@@ -211,9 +211,9 @@ class MeasueCurvature(LocateLanePixel):
 #         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
 #                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
-                  './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
-        fnames = ['./test_images/test2.jpg']
-        fnames = ['./exception_img2.jpg']
+                  './test_images/test5.jpg','./test_images/test6.jpg']
+#         fnames = ['./test_images/test2.jpg']
+#         fnames = ['./exception_img2.jpg']
         
 
         res_imgs = []

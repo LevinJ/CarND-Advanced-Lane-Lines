@@ -28,13 +28,14 @@ class LocateLanePixel(BirdViewTransform):
         self.peak_xs = []
         
         histogram = np.sum(img[int(img_height/2):], axis=0)
-        indexes = detect_peaks(histogram, mph=10, mpd=650)
-        if (len(indexes) != 2):
+        found_peaks = detect_peaks(histogram, mph=10, mpd=650)
+        hist_img = self.__get_histogram_img(img, histogram, found_peaks)
+        if (len(found_peaks) != 2):
             print("unexpected number of peaks!!!")
             return img, img,[], []
         sliding_window_width = 160
-        sliding_windows = [(indexes[0]-int(sliding_window_width/2), indexes[0]+ int(sliding_window_width/2)),
-                           (indexes[1]-int(sliding_window_width/2), indexes[1]+ int(sliding_window_width/2))]
+        sliding_windows = [(found_peaks[0]-int(sliding_window_width/2), found_peaks[0]+ int(sliding_window_width/2)),
+                           (found_peaks[1]-int(sliding_window_width/2), found_peaks[1]+ int(sliding_window_width/2))]
         while end > 0:
             start = end - y_step
             if start < 0:
@@ -50,7 +51,24 @@ class LocateLanePixel(BirdViewTransform):
         self.__draw_sliding_windows(img_with_windows, peak_ys, self.peak_xs)
         left_pixels, right_pixels = self.__identify_lane_pixles(img, peak_ys, self.peak_xs)
         img_left_right = self.__draw_left_right_pixels(img, left_pixels, right_pixels)
-        return img_with_windows, img_left_right,left_pixels, right_pixels
+        
+        return img_with_windows, img_left_right,left_pixels, right_pixels,hist_img
+    def __get_histogram_img(self, img, histogram, found_peaks):
+        img_height = img.shape[0]
+        hist_img = img.copy()
+        hist_img = cv2.cvtColor(hist_img, cv2.COLOR_GRAY2BGR)
+        hist_img = np.uint8(255*hist_img/np.max(hist_img))
+        width = len(histogram)
+        ys = -histogram[:, np.newaxis] + img_height
+        xs = np.arange(0, width)[:, np.newaxis]
+        pts = np.concatenate([xs,ys], axis = 1).astype(np.int32)
+        cv2.polylines(hist_img, [pts], color=(255,0,0),isClosed=False,thickness=6)
+        if len(found_peaks) != 0:
+            peaks_info = '{}'.format(found_peaks)
+            cv2.putText(hist_img,peaks_info,(100,150), cv2.FONT_HERSHEY_SIMPLEX, 2,(255,0,0),4)
+#         plt.imshow(hist_img)
+        
+        return hist_img
     def __get_initial_sliding_windows(self, sliding_windows, img):
         if len(self.peak_xs) <= 1:
             #if this is the first sliding windows, then just return
@@ -263,8 +281,8 @@ class LocateLanePixel(BirdViewTransform):
             original_img, img, color_combined, thres_img  = self.thresh_one_image_fname(fname)
             pers_img, _ ,_= self.bird_view(thres_img)
            
-            img_with_windows,img_left_right,_,_ = self.locate_lane_pixels(pers_img)
-            res_imgs.append(self.stack_image_horizontal([original_img, img, color_combined, thres_img, pers_img, img_with_windows,img_left_right]))
+            img_with_windows,img_left_right,_,_ ,hist_img= self.locate_lane_pixels(pers_img)
+            res_imgs.append(self.stack_image_horizontal([original_img, img, color_combined, thres_img, pers_img, hist_img,img_with_windows,img_left_right]))
         
         res_imgs = np.array(res_imgs)
         res_imgs = np.concatenate(res_imgs, axis=0)
