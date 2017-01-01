@@ -30,6 +30,7 @@ class LaneDetection(MeasueCurvature):
             final_img = final_img[...,::-1]
             
             self.count = self.count + 1
+            plt.imshow(final_img)
         except:
             plt.imsave('exception_img.jpg', initial_img)
             raise 
@@ -87,8 +88,8 @@ class LaneDetection(MeasueCurvature):
     def run(self):
 #         self.test_on_one_image('excpetion_img.jpg')
 #         self.test_on_frame()
-        self.test_on_videos('./project_video.mp4','./project.mp4')
-#         self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
+#         self.test_on_videos('./project_video.mp4','./project.mp4')
+        self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
 #         self.test_on_videos('./harder_challenge_video.mp4','./harder_challenge.mp4')
 
         plt.show()

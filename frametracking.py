@@ -45,7 +45,7 @@ class Lines():
 
 class FrameTracking():
     def __init__(self):
-        self.enable_frame_tracking = False
+        self.enable_frame_tracking = True
 
         self.left_lines = Lines()
         self.right_lines = Lines()
@@ -53,7 +53,8 @@ class FrameTracking():
 
         return
     def add_last_roi(self, roi):
-        self.last_roi = roi
+        if self.enable_frame_tracking:
+            self.last_roi = roi
         return
     def __is_last_frame_confident(self):
         return self.left_lines.detected and self.right_lines.detected

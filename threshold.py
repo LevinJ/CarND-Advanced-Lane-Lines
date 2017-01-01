@@ -150,9 +150,9 @@ class Threshold(Calibrarte):
         color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
         
         if g_frame_tracking.use_last_lane_area_as_roi():
-            roi_img = self.__region_of_interest_last_lane_area(res_imgs, color_combined, combined)
+            roi_img,color_combined = self.__region_of_interest_last_lane_area(res_imgs, color_combined, combined)
         else:
-            roi_img = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
+            roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
         
         res_img = self.stack_image_horizontal(res_imgs)
         
@@ -165,12 +165,14 @@ class Threshold(Calibrarte):
         return self.__thresh_one_image(original_image, debug=debug)
     def __region_of_interest_last_lane_area(self, res_imgs,color_combined, combined):
         mask = g_frame_tracking.last_roi
+#         plt.imshow(mask)
         color_combined = cv2.bitwise_and(color_combined, mask)
+#         plt.imshow(color_combined[...,::-1])
         res_imgs.append(color_combined)
         
         roi_img = cv2.bitwise_and(combined, mask[:,:,0])
         res_imgs.append(roi_img)
-        return roi_img
+        return roi_img,color_combined
     def __region_of_interest_fixed(self, res_imgs,color_combined, combined):
         top_x_gap = 50
         bottom_x_gap = 150
@@ -180,7 +182,7 @@ class Threshold(Calibrarte):
         
         roi_img = self.__region_of_interest(combined, vertices)
         res_imgs.append(roi_img)
-        return roi_img
+        return roi_img,color_combined
     def __region_of_interest(self, img, vertices):
         """
         Applies an image mask.

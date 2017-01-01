@@ -16,7 +16,7 @@ class MeasueCurvature(LocateLanePixel):
         LocateLanePixel.__init__(self)
         return
     def fit_lane_lines(self, img,left_pixels, right_pixels, lane_pixel_num):
-        plt.imshow(img[...,::-1])
+#         plt.imshow(img[...,::-1])
         if (len(left_pixels) == 0 ) or (len(right_pixels) == 0):
             g_frame_tracking.left_lines.detected = False
             g_frame_tracking.left_lines.detected = False
@@ -115,7 +115,9 @@ class MeasueCurvature(LocateLanePixel):
         
         newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0]))
         
-#         plt.imsave('roi_img.jpg', newwarp[...,::-1])
+        new_roi_img = self.__get_roi_image(newwarp)
+        g_frame_tracking.add_last_roi(new_roi_img)
+        
         
         result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
 
@@ -123,7 +125,7 @@ class MeasueCurvature(LocateLanePixel):
         cv2.putText(result,self.curvature_info,(100,50), font, 1,(255,255,255),2)
         cv2.putText(result,self.shift_info,(100,90), font, 1,(255,255,255),2)
         
-#         self.generate_roi_area(img, Minv)
+
         return result
     
     def __fit_lane_line(self, img, pixels,y_min):
@@ -162,6 +164,49 @@ class MeasueCurvature(LocateLanePixel):
         return self.stack_image_horizontal([original_img, img, color_combined, thres_img, pers_img, img_with_windows,img_left_right,img_fitline, map_back_img])
 
     
+    def __get_roi_image(self, img):
+        
+        temp_gray = img[:,:,1]
+        temp_gray[temp_gray<255] = 0
+#         plt.imshow(temp_gray, cmap='gray')
+        
+        start_y = np.argwhere(temp_gray.sum(axis=1) == 0).max()
+
+        left_pts = []
+        right_pts = []
+        x_gap = 5
+        y_gap = 5
+        for i in np.linspace(start_y+1, temp_gray.shape[0]-1, num=10):
+            i =int(i)
+            cur_row = temp_gray[i, :]
+            if((cur_row==255).sum() < 10):
+                continue
+             
+            xs = np.argwhere(cur_row==255)
+            leftx = xs.min()
+            rightx=xs.max()
+            left_pts.append((leftx-x_gap,i))
+            right_pts.append((rightx+ x_gap, i))
+        
+        y_min = start_y - y_gap
+        left_fity, left_fitx = self.__get_fit_pts(left_pts, temp_gray, y_min)
+        right_fity, right_fitx = self.__get_fit_pts(right_pts, temp_gray, y_min)
+        fit_pts = self.__concat_fit_pts(left_fity, left_fitx, right_fity, right_fitx)
+        color_warp = np.zeros_like(img).astype(np.uint8)
+        
+        cv2.fillPoly(color_warp, np.int_([fit_pts]), (255,255, 255))
+#         plt.imshow(color_warp)
+        
+            
+        
+        return color_warp
+    def __get_fit_pts(self, pts, temp_gray, y_min):
+        pts = np.asarray(pts)
+        fit = np.polyfit(pts[:,1], pts[:,0], 2)
+        fity = np.linspace(y_min, temp_gray.shape[0], num=10)
+        fitx = fit[0]*fity**2 + fit[1]*fity + fit[2]
+        return fity,fitx
+    
     def run(self):
 #         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
 #                   './test_images/straight16.jpg','./test_images/straight17.jpg']
@@ -169,16 +214,16 @@ class MeasueCurvature(LocateLanePixel):
                   './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
         fnames = ['./test_images/test2.jpg']
         fnames = ['./exception_img2.jpg']
+        
 
         res_imgs = []
         for fname in fnames:
-#             res_img = self.process_image_fname(fname)
             img = cv2.imread(fname)
             res_img = self.process_image_BGR(img)
             res_imgs.append(res_img)
-        
+         
         res_imgs = self.stack_image_vertical(res_imgs)
-
+ 
         res_imgs = res_imgs[...,::-1]
         plt.imshow(res_imgs)
         plt.show()
