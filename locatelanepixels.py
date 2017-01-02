@@ -32,7 +32,7 @@ class LocateLanePixel(BirdViewTransform):
         hist_img = self.__get_histogram_img(img, histogram, found_peaks)
         if (len(found_peaks) != 2):
             print("unexpected number of peaks!!!")
-            return img, img,[], []
+            return img, img,[], [],hist_img
         sliding_window_width = 160
         sliding_windows = [(found_peaks[0]-int(sliding_window_width/2), found_peaks[0]+ int(sliding_window_width/2)),
                            (found_peaks[1]-int(sliding_window_width/2), found_peaks[1]+ int(sliding_window_width/2))]
@@ -66,6 +66,10 @@ class LocateLanePixel(BirdViewTransform):
         if len(found_peaks) != 0:
             peaks_info = '{}'.format(found_peaks)
             cv2.putText(hist_img,peaks_info,(100,150), cv2.FONT_HERSHEY_SIMPLEX, 2,(255,0,0),4)
+        for peak in found_peaks:
+            pt1 = (peak, img_height)
+            pt2 = (peak, int(img_height/2))
+            cv2.line(hist_img, pt1,pt2,(0,0,255),thickness=5)
 #         plt.imshow(hist_img)
         
         return hist_img
