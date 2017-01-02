@@ -10,6 +10,7 @@ from birdview import BirdViewTransform
 from scipy import signal
 import matplotlib.pyplot as plt
 from detect_peaks import detect_peaks
+from frametracking import FrameTracking, g_frame_tracking
 
 
 class LocateLanePixel(BirdViewTransform):
@@ -19,6 +20,27 @@ class LocateLanePixel(BirdViewTransform):
     def locate_lane_pixels(self, img):
 #         plt.imshow(img, cmap='gray')
         img_height = img.shape[0]
+        histogram = np.sum(img[int(img_height/2):], axis=0)
+        
+        if not g_frame_tracking.use_last_lane_locate_pixels():
+            found_peaks = detect_peaks(histogram, mph=10, mpd=650)
+            sliding_window_width = 160
+            prefix_str=""
+            
+        else:
+            found_peaks = (int(g_frame_tracking.left_lines.last_fitx[-1]), int(g_frame_tracking.right_lines.last_fitx[-1]))
+            sliding_window_width = 200
+            prefix_str="Last Frame Center"
+        
+        hist_img = self.__get_histogram_img(img, histogram, found_peaks,prefix_str=prefix_str)
+        if (len(found_peaks) != 2):
+            print("unexpected number of peaks!!!")
+            return img, img,[], [],hist_img
+                
+                
+        return self.__locate_lane_pixels_with_root_peaks(img,found_peaks,hist_img,sliding_window_width)
+    def __locate_lane_pixels_with_root_peaks(self, img,found_peaks,hist_img, sliding_window_width):
+        img_height = img.shape[0]
         num_histogram = 5
         y_step = int(img_height/num_histogram)
         
@@ -26,14 +48,6 @@ class LocateLanePixel(BirdViewTransform):
         end = img_height
         self.img_width = img.shape[1]
         self.peak_xs = []
-        
-        histogram = np.sum(img[int(img_height/2):], axis=0)
-        found_peaks = detect_peaks(histogram, mph=10, mpd=650)
-        hist_img = self.__get_histogram_img(img, histogram, found_peaks)
-        if (len(found_peaks) != 2):
-            print("unexpected number of peaks!!!")
-            return img, img,[], [],hist_img
-        sliding_window_width = 160
         sliding_windows = [(found_peaks[0]-int(sliding_window_width/2), found_peaks[0]+ int(sliding_window_width/2)),
                            (found_peaks[1]-int(sliding_window_width/2), found_peaks[1]+ int(sliding_window_width/2))]
         while end > 0:
@@ -53,7 +67,7 @@ class LocateLanePixel(BirdViewTransform):
         img_left_right = self.__draw_left_right_pixels(img, left_pixels, right_pixels)
         
         return img_with_windows, img_left_right,left_pixels, right_pixels,hist_img
-    def __get_histogram_img(self, img, histogram, found_peaks):
+    def __get_histogram_img(self, img, histogram, found_peaks, prefix_str=""):
         img_height = img.shape[0]
         hist_img = img.copy()
         hist_img = cv2.cvtColor(hist_img, cv2.COLOR_GRAY2BGR)
@@ -64,7 +78,7 @@ class LocateLanePixel(BirdViewTransform):
         pts = np.concatenate([xs,ys], axis = 1).astype(np.int32)
         cv2.polylines(hist_img, [pts], color=(255,0,0),isClosed=False,thickness=6)
         if len(found_peaks) != 0:
-            peaks_info = '{}'.format(found_peaks)
+            peaks_info = prefix_str + '{}'.format(found_peaks)
             cv2.putText(hist_img,peaks_info,(100,150), cv2.FONT_HERSHEY_SIMPLEX, 2,(255,0,0),4)
         for peak in found_peaks:
             pt1 = (peak, img_height)

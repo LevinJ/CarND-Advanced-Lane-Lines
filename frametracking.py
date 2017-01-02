@@ -52,16 +52,15 @@ class FrameTracking():
         self.last_roi = None
 
         return
+
     def add_last_roi(self, roi):
         if self.enable_frame_tracking:
             self.last_roi = roi
         return
     def __is_last_frame_confident(self):
         return self.left_lines.detected and self.right_lines.detected
-    def use_last_left_lane_locate_pixels(self):
-        
-        return self.enable_frame_tracking and self.__is_last_frame_confident()
-    def use_last_right_lane_locate_pixels(self):
+
+    def use_last_lane_locate_pixels(self):
         return  self.enable_frame_tracking and self.__is_last_frame_confident()
     def use_last_lane_area_as_roi(self):
         return self.enable_frame_tracking and self.__is_last_frame_confident()
