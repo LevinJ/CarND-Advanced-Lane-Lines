@@ -136,8 +136,11 @@ class Threshold(Calibrarte):
         red_color = self.red_thres(image, (200, 255))
         res_imgs.append(red_color)
         
-        s_color = self.hls_thres(image, (90, 255))
+#         s_color = self.hls_thres(image, (90, 255))
+        s_color = self.hsv_thres_yellow(image)
         res_imgs.append(s_color)
+        
+       
         
         combined = np.zeros_like(s_color)
 #         combined[((gradx == 1) | (s_color == 1)) & (dir_binary == 1)] = 1
@@ -149,10 +152,11 @@ class Threshold(Calibrarte):
         
         color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
         
-        if g_frame_tracking.use_last_lane_area_as_roi():
-            roi_img,color_combined = self.__region_of_interest_last_lane_area(res_imgs, color_combined, combined)
-        else:
-            roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
+#         if g_frame_tracking.use_last_lane_area_as_roi():
+#             roi_img,color_combined = self.__region_of_interest_last_lane_area(res_imgs, color_combined, combined)
+#         else:
+#             roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
+        roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
         
         res_img = self.stack_image_horizontal(res_imgs)
         
@@ -215,6 +219,27 @@ class Threshold(Calibrarte):
         binary = np.zeros_like(S)
         binary[(S > thresh[0]) & (S <= thresh[1])] = 1
         return binary
+    def format_coord(self, x, y):
+        pt = self.hsv_img[y, x, :]
+        return 'HSV value, x={:.0f}, y={:.0f}  [h={}, s={}, v={}]'.format(x, y, pt[0],pt[1],pt[2])
+    
+    def hsv_thres_yellow(self, image):
+        hsv_img = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        lowerb = np.array([20, 40, 100], dtype=np.uint8)
+        upperb = np.array([30, 255, 255], dtype=np.uint8)
+        
+
+        
+        
+        mask = cv2.inRange(hsv_img, lowerb, upperb)
+        mask[mask==255]=1
+        #for the purpose of showing hsv value
+#         self.hsv_img = hsv_img 
+#         _, ax = plt.subplots()
+#         ax.format_coord = self.format_coord
+#         ax.imshow(image[...,::-1])
+
+        return mask
     
     def red_thres(self, image, thresh=(0, 255)):
         R = image[:,:,2]
@@ -226,6 +251,8 @@ class Threshold(Calibrarte):
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/signs_vehicles_xygrad.png','./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg',
           './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
+        fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
+          './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
 #         fnames = ['./exception_img.jpg']
         res_imgs = []
         for fname in fnames:

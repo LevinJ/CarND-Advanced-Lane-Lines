@@ -113,6 +113,8 @@ class BirdViewTransform(Threshold):
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
                   './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
+        fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
+          './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
 #         fnames = ['./exception_img.jpg']
 #         self.test_transform(fnames)
         res_imgs = []
