@@ -34,8 +34,8 @@ class Lines():
         self.last_fity = None
         self.last_fit = None
     def add_last_fit(self, fit, fity, fitx):
-        self.last_fitx = fitx
-        self.last_fity = fity
+        self.last_fitx = fitx.astype(np.int32)
+        self.last_fity = fity.astype(np.int32)
         self.last_fit = fit
         self.recent_xfitted.append(self.last_fitx)
         return

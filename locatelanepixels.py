@@ -22,29 +22,29 @@ class LocateLanePixel(BirdViewTransform):
         img_height = img.shape[0]
         histogram = np.sum(img[int(img_height/2):], axis=0)
         
-        if not g_frame_tracking.use_last_lane_locate_pixels():
+        if g_frame_tracking.use_last_lane_locate_pixels():
+            found_peaks = (int(g_frame_tracking.left_lines.last_fitx[-1]), int(g_frame_tracking.right_lines.last_fitx[-1]))
+            sliding_window_width = 160
+            prefix_str="Last Frame Center"
+
+        else:    
             found_peaks = detect_peaks(histogram, mph=10, mpd=650)
             sliding_window_width = 160
             prefix_str=""
-            
-        else:
-            found_peaks = (int(g_frame_tracking.left_lines.last_fitx[-1]), int(g_frame_tracking.right_lines.last_fitx[-1]))
-            sliding_window_width = 200
-            prefix_str="Last Frame Center"
         
-        hist_img = self.__get_histogram_img(img, histogram, found_peaks,prefix_str=prefix_str)
+        self.hist_img = self.__get_histogram_img(img, histogram, found_peaks,prefix_str=prefix_str)
         if (len(found_peaks) != 2):
             print("unexpected number of peaks!!!")
-            return img, img,[], [],hist_img
+            return img, img,[], [],self.hist_img
                 
                 
-        return self.__locate_lane_pixels_with_root_peaks(img,found_peaks,hist_img,sliding_window_width)
+        return self.__locate_lane_pixels_with_root_peaks(img,found_peaks,self.hist_img,sliding_window_width)
     def __locate_lane_pixels_with_root_peaks(self, img,found_peaks,hist_img, sliding_window_width):
         img_height = img.shape[0]
         num_histogram = 5
         y_step = int(img_height/num_histogram)
         
-        peak_ys= []
+        self.peak_ys= []
         end = img_height
         self.img_width = img.shape[1]
         self.peak_xs = []
@@ -54,7 +54,7 @@ class LocateLanePixel(BirdViewTransform):
             start = end - y_step
             if start < 0:
                 start = 0
-            peak_ys.append((start, end))
+            self.peak_ys.append((start, end))
             sliding_windows = self.__fine_tune_sliding_windows(img, (start, end), self.__get_initial_sliding_windows(sliding_windows, img))
             self.peak_xs.append(sliding_windows)
             end = end - y_step
@@ -62,9 +62,10 @@ class LocateLanePixel(BirdViewTransform):
         
         
         img_with_windows = img.copy()
-        self.__draw_sliding_windows(img_with_windows, peak_ys, self.peak_xs)
-        left_pixels, right_pixels = self.__identify_lane_pixles(img, peak_ys, self.peak_xs)
+        self.__draw_sliding_windows(img_with_windows, self.peak_ys, self.peak_xs)
+        left_pixels, right_pixels = self.__identify_lane_pixles(img, self.peak_ys, self.peak_xs)
         img_left_right = self.__draw_left_right_pixels(img, left_pixels, right_pixels)
+#         plt.imshow(hist_img)
         
         return img_with_windows, img_left_right,left_pixels, right_pixels,hist_img
     def __get_histogram_img(self, img, histogram, found_peaks, prefix_str=""):
@@ -84,18 +85,33 @@ class LocateLanePixel(BirdViewTransform):
             pt1 = (peak, img_height)
             pt2 = (peak, int(img_height/2))
             cv2.line(hist_img, pt1,pt2,(0,0,255),thickness=5)
-#         plt.imshow(hist_img)
         
         return hist_img
     def __get_initial_sliding_windows(self, sliding_windows, img):
+        new_sliding_windows = []
+        peak_ys = self.peak_ys[-1]
+        
         if len(self.peak_xs) <= 1:
             #if this is the first sliding windows, then just return
-            return sliding_windows
-        new_sliding_windows = []
-        for i in range(len(sliding_windows)):
-            new_sliding_window = self.__get_intial_sliding_window(sliding_windows[i], np.array(self.peak_xs)[:,i], img)
-            new_sliding_windows.append(new_sliding_window)
+            new_sliding_windows = sliding_windows
         
+        elif g_frame_tracking.use_last_lane_locate_pixels():
+            windows_width = 160
+            current_index = -len(self.peak_ys)
+            if (g_frame_tracking.left_lines.last_fitx[current_index] is not None) and (g_frame_tracking.right_lines.last_fitx[current_index] is not None):
+                left_window = [g_frame_tracking.left_lines.last_fitx[current_index]-int(windows_width/2), 
+                                g_frame_tracking.left_lines.last_fitx[current_index]+int(windows_width/2)]
+                right_window = [g_frame_tracking.right_lines.last_fitx[current_index]-int(windows_width/2), 
+                                g_frame_tracking.right_lines.last_fitx[current_index]+int(windows_width/2)]
+                new_sliding_windows = [left_window, right_window]
+                
+        else:
+        
+            for i in range(len(sliding_windows)):
+                new_sliding_window = self.__get_intial_sliding_window(sliding_windows[i], np.array(self.peak_xs)[:,i], img)
+                new_sliding_windows.append(new_sliding_window)
+        
+        self.__draw_sliding_windows(self.hist_img, [peak_ys], [new_sliding_windows])
         return  new_sliding_windows
    
     def __get_intial_sliding_window(self, sliding_window, peak_xs, img):
@@ -171,7 +187,10 @@ class LocateLanePixel(BirdViewTransform):
                 left_window = [(leftx1, y1),(leftx2, y1),(leftx2, y2),(leftx1, y2)]
                 left_window = np.asarray(left_window).astype(np.int32)
                 sliding_windows_pts.append(left_window)
-                cv2.rectangle(img, tuple(left_window[0]), tuple(left_window[2]),  1,thickness=5)
+                if (len(img.shape) == 2):
+                    cv2.rectangle(img, tuple(left_window[0]), tuple(left_window[2]),  1,thickness=5)
+                else:
+                    cv2.rectangle(img, tuple(left_window[0]), tuple(left_window[2]),  (255,255,255),thickness=5)
                 
             
             if rightx is not None:
@@ -179,7 +198,10 @@ class LocateLanePixel(BirdViewTransform):
                 right_window = [(rightx1, y1),(rightx2, y1),(rightx2, y2),(rightx1, y2)]
                 right_window = np.asarray(right_window).astype(np.int32)
                 sliding_windows_pts.append(right_window)
-                cv2.rectangle(img, tuple(right_window[0]), tuple(right_window[2]),  1,thickness=5)
+                if (len(img.shape) == 2):
+                    cv2.rectangle(img, tuple(right_window[0]), tuple(right_window[2]),  1,thickness=5)
+                else:
+                    cv2.rectangle(img, tuple(right_window[0]), tuple(right_window[2]),  (255,255,255),thickness=5)
             
         
             
