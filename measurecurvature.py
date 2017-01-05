@@ -86,26 +86,6 @@ class MeasueCurvature(LocateLanePixel):
         
         
         return
-#     def generate_roi_area(self, img, Minv):
-#         left_fity = self.left_fity 
-#         left_fitx = self.left_fitx
-#         right_fity = self.right_fity
-#         right_fitx = self.right_fitx
-#         left_fitx = left_fitx - 50
-#         right_fity = right_fity + 50
-#         fit_pts = self.__concat_fit_pts(left_fity, left_fitx, right_fity, right_fitx)
-#         
-#         color_warp = np.zeros_like(img).astype(np.uint8)
-#         
-#         cv2.fillPoly(color_warp, np.int_([fit_pts]), (0,255, 0))
-#         
-#         last_roi = color_warp.copy()
-#         cv2.fillPoly(last_roi, np.int_([fit_pts]), (255,255, 255))
-#         g_frame_tracking.add_last_roi(last_roi)
-#         plt.imshow(last_roi[...,::-1])
-#         
-#        
-#         return 
     def map_back_road(self, img, fit_pts, Minv):
         if fit_pts is None:
             return img
@@ -151,16 +131,6 @@ class MeasueCurvature(LocateLanePixel):
         final_img = self.stack_image_horizontal([left_side, right_side], max_img_width = left_side.shape[1], max_img_height= left_side.shape[0])
         
         return  final_img
-#     def process_image_fname(self, fname):
-#      
-#         original_img, img, color_combined, thres_img = self.thresh_one_image_fname(fname)
-#         pers_img, Minv,lane_pixel_num = self.bird_view(thres_img)
-#        
-#         img_with_windows,img_left_right,left_pixels, right_pixels= self.locate_lane_pixels(pers_img)
-#         img_fitline, fit_pts = self.fit_lane_lines(img_left_right,left_pixels, right_pixels, lane_pixel_num)
-#         map_back_img = self.map_back_road(img, fit_pts, Minv)
-#      
-#         return self.stack_image_horizontal([original_img, img, color_combined, thres_img, pers_img, img_with_windows,img_left_right,img_fitline, map_back_img])
 
     
     def __get_roi_image(self, img):
@@ -213,8 +183,8 @@ class MeasueCurvature(LocateLanePixel):
                   './test_images/test5.jpg','./test_images/test6.jpg']
         fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
           './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
-#         fnames = ['./test_images/test2.jpg']
-#         fnames = ['./exception_img2.jpg']
+#         fnames = ['./test_images/challenge2.jpg']
+#         fnames = ['./test_images/test5.jpg']
         
 
         res_imgs = []

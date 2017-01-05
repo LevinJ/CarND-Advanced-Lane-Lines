@@ -144,7 +144,9 @@ class Threshold(Calibrarte):
         
         combined = np.zeros_like(s_color)
 #         combined[((gradx == 1) | (s_color == 1)) & (dir_binary == 1)] = 1
-        combined[(gradx == 1) | (s_color == 1)] = 1
+#         combined[(gradx == 1) | (s_color == 1)] = 1
+#         half_width = combined.shape[1]
+        combined = np.concatenate([s_color[:,:640], gradx[:,640:]],axis=1)
         res_imgs.append(combined)
         
         # region of interest
@@ -253,6 +255,7 @@ class Threshold(Calibrarte):
           './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
         fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
           './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
+        fnames = ['./test_images/challenge2.jpg']
 #         fnames = ['./exception_img.jpg']
         res_imgs = []
         for fname in fnames:

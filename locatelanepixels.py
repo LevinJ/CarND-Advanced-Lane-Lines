@@ -28,17 +28,23 @@ class LocateLanePixel(BirdViewTransform):
             prefix_str="Last Frame Center"
 
         else:    
-            found_peaks = detect_peaks(histogram, mph=10, mpd=650)
+            found_peaks = self.__find_root_peaks(histogram)
             sliding_window_width = 160
             prefix_str=""
         
         self.hist_img = self.__get_histogram_img(img, histogram, found_peaks,prefix_str=prefix_str)
+#         plt.imshow(self.hist_img)
         if (len(found_peaks) != 2):
             print("unexpected number of peaks!!!")
             return img, img,[], [],self.hist_img
                 
                 
         return self.__locate_lane_pixels_with_root_peaks(img,found_peaks,self.hist_img,sliding_window_width)
+    def __find_root_peaks(self, histogram):
+        found_peaks = detect_peaks(histogram, mph=10, mpd=650)
+        if len(found_peaks)!=2:
+            found_peaks = np.array([300,920])
+        return found_peaks
     def __locate_lane_pixels_with_root_peaks(self, img,found_peaks,hist_img, sliding_window_width):
         img_height = img.shape[0]
         num_histogram = 5
@@ -300,11 +306,11 @@ class LocateLanePixel(BirdViewTransform):
             
         return sliding_windows
     def __show_rectangel(self,img):
-        plt.imshow(img, cmap='gray')
+#         plt.imshow(img, cmap='gray')
         pt1 = (229, 648)
         pt2 =(429, 720)
         cv2.rectangle(img, pt1, pt2, 1,thickness=5)
-        plt.imshow(img, cmap='gray')
+#         plt.imshow(img, cmap='gray')
         return
 
     
@@ -313,7 +319,9 @@ class LocateLanePixel(BirdViewTransform):
                   './test_images/straight16.jpg','./test_images/straight17.jpg']
 #         fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
 #                   './test_images/test5.jpg','./test_images/test6.jpg','./exception_img.jpg']
-        fnames = ['./exception_img.jpg']
+        fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
+          './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
+        fnames = ['./test_images/challenge2.jpg']
 #         fnames = ['./test_images/test5.jpg']
 
         res_imgs = []
