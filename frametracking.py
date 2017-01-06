@@ -45,17 +45,22 @@ class Lines():
 
 class FrameTracking():
     def __init__(self):
-        self.enable_frame_tracking = False
+        self.enable_frame_tracking = True
 
         self.left_lines = Lines()
         self.right_lines = Lines()
         self.last_roi = None
+        self.last_unwrap = None
 
         return
 
     def add_last_roi(self, roi):
         if self.enable_frame_tracking:
             self.last_roi = roi
+        return
+    def add_last_unwrap(self, unwrap):
+        if self.enable_frame_tracking:
+            self.last_unwrap = unwrap
         return
     def __is_last_frame_confident(self):
         return self.left_lines.detected and self.right_lines.detected
@@ -64,6 +69,8 @@ class FrameTracking():
         return  self.enable_frame_tracking and self.__is_last_frame_confident()
     def use_last_lane_area_as_roi(self):
         return self.enable_frame_tracking and self.__is_last_frame_confident()
+    def use_last_lane_unwrap(self):
+        return self.enable_frame_tracking
  
         
     def run(self):

@@ -16,7 +16,7 @@ The goals / steps of this project are the following:
 
 ### Final Result
 
-The final pipleline has been successfully applied in both project video and challenge video. (https://youtu.be/JmJUB54CtmU)
+The final pipleline has been successfully applied in both [project video](https://youtu.be/VA8V-RgZ7Jo) and [challenge video](https://youtu.be/JNfJ-Rtege4).  
 
 
 ### Camera Calibration
@@ -67,7 +67,7 @@ Class MeasueCurvature in file measurecurvature.py implemented this feature, the 
 
 ### Pipeline (video)
 1. Resultant video  
-After much fine tuning over the pipeline steps and relevant hyper parameters, the final pipleline is able to successfuly locate lane lines in the videos.  
+After much tweaks over the pipeline steps and relevant hyper parameters, the final pipleline is able to successfuly locate lane lines in the [project video](https://youtu.be/VA8V-RgZ7Jo) and [challenge video](https://youtu.be/JNfJ-Rtege4).  
 
 2. Frame tracking  
  To handle some challening frames, we implement frame tracking mechanism and leverage previous frames lane line information to help identify current frame's lane lines. Specifially below information from previous frames are tracked and utilized.   
@@ -84,5 +84,5 @@ Frame tracking mechanism is mainly implmented in file frametracking.py file.
 
 ### Reflection
 A good lane-finding algorithm must be robust to changing light conditions, weather conditions, curvature of the road, type of road, and other vehicles on the road, and etc. 
-The  pipeline algorithm described above works well on the project video and challenge video, and much crecdit must be given to various process/paramter tweaks targetting these two videos. In this sense, this project really inspires me to learn more and find out how a reliable lane finding solution used in real life can be implemented.
+The  pipeline algorithm described above works well on the project video and challenge video, but much crecdit must be given to various process/paramter tweaks targetting these two videos. In this sense, this project really inspires me to learn more and find out how a reliable lane finding solution used in real life can be implemented.
 

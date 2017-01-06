@@ -88,17 +88,19 @@ class MeasueCurvature(LocateLanePixel):
         return
     def map_back_road(self, img, fit_pts, Minv):
         if fit_pts is None:
-            return img
-        color_warp = np.zeros_like(img).astype(np.uint8)
-        
-        cv2.fillPoly(color_warp, np.int_([fit_pts]), (0,255, 0))
-        
-        newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0]))
-        
-        new_roi_img = self.__get_roi_image(newwarp)
-        g_frame_tracking.add_last_roi(new_roi_img)
-        
-        
+            if g_frame_tracking.use_last_lane_unwrap():
+                newwarp = g_frame_tracking.last_unwrap
+            else:
+                return img
+                
+        else:
+            color_warp = np.zeros_like(img).astype(np.uint8)  
+            cv2.fillPoly(color_warp, np.int_([fit_pts]), (0,255, 0))       
+            newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0]))
+            g_frame_tracking.add_last_unwrap(newwarp)
+            new_roi_img = self.__get_roi_image(newwarp)
+            g_frame_tracking.add_last_roi(new_roi_img)
+
         result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
@@ -144,7 +146,7 @@ class MeasueCurvature(LocateLanePixel):
         left_pts = []
         right_pts = []
         x_gap = 20
-        y_gap = 10
+        y_gap = 50
         for i in np.linspace(start_y+1, temp_gray.shape[0]-1, num=10):
             i =int(i)
             cur_row = temp_gray[i, :]
