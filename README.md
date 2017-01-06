@@ -71,10 +71,9 @@ After much fine tuning over the pipeline steps and relevant hyper parameters, th
 2. Frame tracking  
 To handle some challening frames, we implement frame tracking mechanism and leverage previous frames lane line information to help identify current frame's lane lines. Specifially below information from previous frames are tracked and utilized.  
 
-* Use identifed lane area in last frame as current frame's region of interest mask in thresholdig step. 
-This techniques has been found very useful to exclude misleading pixels, especially in the challenge video.
-* Use fit lane line in last frame as current frame's starting search point when locating lane line pixels
-* Reuse last frame lane line if we can't find lane line for current frame. This is a bit risky if lane lines can't be identified for several frame in sequence. Empirically this tick works well for the project video and challenge video.
+1) Use identifed lane area in last frame as current frame's region of interest mask in thresholdig step. This techniques has been found very useful to exclude misleading pixels, especially in the challenge video.
+2) Use fit lane line in last frame as current frame's starting search point when locating lane line pixels
+3)Reuse last frame lane line if we can't find lane line for current frame. This is a bit risky if lane lines can't be identified for several frame in sequence. Empirically this tick works well for the project video and challenge video.  
 
 3. Fresh search in the first few images  
 At the begginning, we have no previous frame to rely upon, so we need to search lane line from ground up. Also, the pipeline also needs to be aware if it's confident about its last lane line identification, if not, we need to search from groud up as well.
