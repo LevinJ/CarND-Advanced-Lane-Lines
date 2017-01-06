@@ -65,5 +65,22 @@ class MeasueCurvature in file measurecurvature.py implemented this feature, the 
 
 
 ### Pipeline (video)
+1. Resultant video  
+After much fine tuning over the pipeline steps and relevant hyper parameters, the final pipleline is able to successfuly locate lane lines in the videos.  
+
+2. Frame tracking  
+To handle some challening frames, we implement frame tracking mechanism and leverage previous frames lane line information to help identify current frame's lane lines. Specifially below information from previous frames are tracked and utilized.  
+* Use identifed lane area in last frame as current frame's region of interest mask in thresholdig step. 
+This techniques has been found very useful to exclude misleading pixels, especially in the challenge video.
+* Use fit lane line in last frame as current frame's starting search point when locating lane line pixels
+* Reuse last frame lane line if we can't find lane line for current frame. This is a bit risky if lane lines can't be identified for several frame in sequence. Empirically this tick works well for the project video and challenge video.
+
+3. Fresh search in the first few images  
+At the begginning, we have no previous frame to rely upon, so we need to search lane line from ground up. Also, the pipeline also needs to be aware if it's confident about its last lane line identification, if not, we need to search from groud up as well.
+
+Frame tracking mechanism is mainly implmented in file frametracking.py file.
 
 ### Reflection
+A good lane-finding algorithm must be robust to changing light conditions, weather conditions, curvature of the road, type of road, and other vehicles on the road etc. 
+The  pipeline algorithm described above works well on the project video and challenge video, much crecdit must be given to various process/paramter ftweaks targetting this two videos. In this sense, this project really inspires to learn more and find out how a reliable lane finding solution used in real life can be implmeented.
+
