@@ -34,8 +34,8 @@ Class Calibrarte in file calibrate.py implemented camera calibration feature, th
 1. Distortion correction
 Distortion correction has been correctly applied to each test image, as demonstrated in below image.
 2. Thresholding  
-Various thresholding are exlored to identify pixles that are likely to be lane pixels, including x graident, y gradient, gradient, H and S channel in HLS color space. At the end H channel and x thresholding is combined to perform thresholding. Note that ROI mask is also used to acheive best result.  
-Below is the thresholding result performed on all test images. The right most images are the final image we will use to feed into next step in pipeline.  
+Various thresholding are exlored to identify pixles that are likely to be lane pixels, including x graident, y gradient, gradient, gradient direction, H and S channel in HLS color space. At the end H channel and x gradient thresholding is combined to perform thresholding. Note that ROI mask is also used to acheive best result.  
+Below is the thresholding result performed on all test images. The right most images are the final image we will use to feed into next step in the pipeline.  
 ![Distortion Correction and Thresholding](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/thresholding.png)  
 
 class Threshold in file threshold.py implemented distortion correction and thresholding feature, the main external interface is Threshold::thresh_one_image_fname method.  
@@ -60,7 +60,7 @@ With the left/right lane lines being fit, we compute the curvature at the bottom
 Class MeasueCurvature in file measurecurvature.py implemented this feature, the main interface is the MeasueCurvature::__cal_curvature method.  
 6. Warp back to original image space   
 
-Fianlly we wrap back the identifeid lane area in birdviw back to original image space by using cv2.warpPerspective API.  This is demonstrated in the image in step 4 as well.  
+Finally we wrap back the identifeid lane area in birdviw back to original image space by using cv2.warpPerspective API.  This is demonstrated in the image in step 4 as well.  
 Class MeasueCurvature in file measurecurvature.py implemented this feature, the main interface is the MeasueCurvature::map_back_road method.  
 
 
@@ -83,5 +83,5 @@ Frame tracking mechanism is mainly implmented in file frametracking.py file.
 
 ### Reflection
 A good lane-finding algorithm must be robust to changing light conditions, weather conditions, curvature of the road, type of road, and other vehicles on the road, and etc. 
-The  pipeline algorithm described above works well on the project video and challenge video, much crecdit must be given to various process/paramter tweaks targetting these two videos. In this sense, this project really inspires me to learn more and find out how a reliable lane finding solution used in real life can be implemented.
+The  pipeline algorithm described above works well on the project video and challenge video, and much crecdit must be given to various process/paramter tweaks targetting these two videos. In this sense, this project really inspires me to learn more and find out how a reliable lane finding solution used in real life can be implemented.
 
