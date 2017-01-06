@@ -92,7 +92,7 @@ class LaneDetection(MeasueCurvature):
         self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
 #         self.test_on_videos('./harder_challenge_video.mp4','./harder_challenge.mp4')
 
-        plt.show()
+#         plt.show()
         
         return
 

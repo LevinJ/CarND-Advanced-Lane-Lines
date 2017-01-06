@@ -154,11 +154,11 @@ class Threshold(Calibrarte):
         
         color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
         
-#         if g_frame_tracking.use_last_lane_area_as_roi():
-#             roi_img,color_combined = self.__region_of_interest_last_lane_area(res_imgs, color_combined, combined)
-#         else:
-#             roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
-        roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
+        if g_frame_tracking.use_last_lane_area_as_roi():
+            roi_img,color_combined = self.__region_of_interest_last_lane_area(res_imgs, color_combined, combined)
+        else:
+            roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
+#         roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
         
         res_img = self.stack_image_horizontal(res_imgs)
         

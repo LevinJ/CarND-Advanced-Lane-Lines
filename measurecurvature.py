@@ -143,8 +143,8 @@ class MeasueCurvature(LocateLanePixel):
 
         left_pts = []
         right_pts = []
-        x_gap = 5
-        y_gap = 5
+        x_gap = 20
+        y_gap = 10
         for i in np.linspace(start_y+1, temp_gray.shape[0]-1, num=10):
             i =int(i)
             cur_row = temp_gray[i, :]
