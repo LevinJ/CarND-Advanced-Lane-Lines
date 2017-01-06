@@ -1,5 +1,5 @@
 # Self-Driving Car Engineer Nanodegree
-# Deep Learning
+# Computer Vision
 ## Project: Advanced Lane Finding
 
 ### Overview
@@ -25,7 +25,7 @@ Using the calibration chessboard images provided in the repository, we successfu
 
 After camera matrix and distortion matrix are obained, we stored them in a pickle file so that we can quickly retreive them later on without having to calculate them afresh every time we use them to undistort images.
 
-![Camera Calibration]('./camera_calibration.png')
+![Camera Calibration](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/camera_calibration.png)
 
 
 class Calibrarte in file calibrate.py implemented camera calibration feature, the main external interface is the Calibrarte::undistort method
