@@ -28,9 +28,41 @@ After camera matrix and distortion matrix are obained, we stored them in a pickl
 ![Camera Calibration](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/camera_calibration.png)
 
 
-class Calibrarte in file calibrate.py implemented camera calibration feature, the main external interface is the Calibrarte::undistort method
+class Calibrarte in file calibrate.py implemented camera calibration feature, the main external interface is the Calibrarte::undistort method.  
 
 ### Pipeline (single images)
+1. Distortion correction
+Distortion correction has been correctly applied to each test image, as demonstrated in below image.
+2. Thresholding  
+Various thresholding are exlored to identify pixles that are likely to be lane pixels, including x graident, y gradient, gradient, H and S channel in HLS color space. At the end H channel and x thresholding is combined to perform thresholding. Note that ROI mask is also used to acheive best result.  
+Below is the thresholding result performed on all test images. The right most images are the final image we will use to feed into next step in pipeline.  
+![Distortion Correction and Thresholding](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/thresholding.png)  
+
+class Threshold in file threshold.py implemented distortion correction and thresholding feature, the main external interface is Threshold::thresh_one_image_fname method.  
+3. Perspective transform  
+cv2.getPerspectiveTransform and cv2.warpPerspective APIs from opencv library are used to perform perspective transform on the thresholded image.
+Below is the result:  
+![Perspective Transform](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/perspective_transform.png) 
+
+class BirdViewTransform in file birdview.py implemented this feature, the main external interface is the BirdViewTransform::bird_view method.  
+4. Lane pixels identification and ploynominial fit  
+To identify lane pixels, we perform below steps:  
+1)  get the histogram of pixel distrition over y direction for the lower half part of the image
+2)  found the two peaks in the histogram
+3)  use small sliding windows to identify lane pixels from bottom to top
+After all the lane pixles for left and right lanes are identified, we use np.fit over y to get the polynominal fit for the lane line.  
+Below image demonstrated above operations.  
+![Lane identification, lane line fit, curvature and vehicle position, wrap back](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/final_image.png) 
+
+class MeasueCurvature in file measurecurvature.py implemented this feature, the main external interface is the MeasueCurvature::fit_lane_lines method.  
+5. Curvature and vehicle position calculation   
+With the left/right lane lines being fit, we compute the curvature at the bottom of the image, as well as the vehicle postion relative to lane center. The resultant information is displayed in the image as texts. This is demostrated in the image in step 4.  
+class MeasueCurvature in file measurecurvature.py implemented this feature, the main interface is the MeasueCurvature::__cal_curvature method.  
+
+6. Warp back to original image space  
+Fianlly we wrap back the identifeid lane area in birdviw back to original image space by using cv2.warpPerspective API.  This is demonstrated in the image in step 4 as well.  
+class MeasueCurvature in file measurecurvature.py implemented this feature, the main interface is the MeasueCurvature::map_back_road method.  
+
 
 ### Pipeline (video)
 
