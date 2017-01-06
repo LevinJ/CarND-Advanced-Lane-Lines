@@ -47,9 +47,9 @@ Below is the result:
 Class BirdViewTransform in file birdview.py implemented this feature, the main external interface is the BirdViewTransform::bird_view method.  
 4. Lane pixels identification and ploynominial fit  
 To identify lane pixels, we perform below steps:  
-1)  get the histogram of pixel distrition over y direction for the lower half part of the image
-2)  found the two peaks in the histogram
-3)  use small sliding windows to identify lane pixels from bottom to top
+ 1)  get the histogram of pixel distrition over y direction for the lower half part of the image  
+ 2)  found the two peaks in the histogram  
+ 3)  use small sliding windows to identify lane pixels from bottom to top  
 After all the lane pixles for left and right lanes are identified, we use np.fit over y to get the polynominal fit for the lane line.  
 Below image demonstrated above operations.  
 ![Lane identification, lane line fit, curvature and vehicle position, wrap back](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/final_image.png) 
@@ -69,11 +69,11 @@ Class MeasueCurvature in file measurecurvature.py implemented this feature, the 
 After much fine tuning over the pipeline steps and relevant hyper parameters, the final pipleline is able to successfuly locate lane lines in the videos.  
 
 2. Frame tracking  
-To handle some challening frames, we implement frame tracking mechanism and leverage previous frames lane line information to help identify current frame's lane lines. Specifially below information from previous frames are tracked and utilized.   
-  * Use identifed lane area in last frame as current frame's region of interest mask in thresholdig step.   
+ To handle some challening frames, we implement frame tracking mechanism and leverage previous frames lane line information to help identify current frame's lane lines. Specifially below information from previous frames are tracked and utilized.   
+ 1) Use identifed lane area in last frame as current frame's region of interest mask in thresholdig step.   
 This techniques has been found very useful to exclude misleading pixels, especially in the challenge video.  
-  * Use fit lane line in last frame as current frame's starting search point when locating lane line pixels  
-  * Reuse last frame lane line if we can't find lane line for current frame.   
+ 2) Use fit lane line in last frame as current frame's starting search point when locating lane line pixels  
+ 3) Reuse last frame lane line if we can't find lane line for current frame.   
 This is a bit risky if lane lines can't be identified for several frame in sequence. Empirically this tick works well for the project video and challenge video.  
 
 3. Fresh search in the first few images  
