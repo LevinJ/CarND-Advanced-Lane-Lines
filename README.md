@@ -52,6 +52,7 @@ To identify lane pixels, we perform below steps:
  3)  use small sliding windows to identify lane pixels from bottom to top  
 After all the lane pixles for left and right lanes are identified, we use np.fit over y to get the polynominal fit for the lane line.  
 Below image demonstrated above operations.  
+![Lane identification, lane line fit, curvature and vehicle position, wrap back, single image](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/final_image_2.png)  
 ![Lane identification, lane line fit, curvature and vehicle position, wrap back](https://github.com/LevinJ/CarND-Advanced-Lane-Lines/blob/master/final_image.png) 
 
 class MeasueCurvature in file measurecurvature.py implemented this feature, the main external interface is the MeasueCurvature::fit_lane_lines method.  
