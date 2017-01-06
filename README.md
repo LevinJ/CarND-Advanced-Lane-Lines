@@ -1,5 +1,8 @@
-## Advanced Lane Finding
+# Self-Driving Car Engineer Nanodegree
+# Deep Learning
+## Project: Advanced Lane Finding
 
+### Overview
 The goals / steps of this project are the following:  
 
 * Compute the camera calibration matrix and distortion coefficients given a set of chessboard images.
@@ -11,8 +14,24 @@ The goals / steps of this project are the following:
 * Warp the detected lane boundaries back onto the original image.
 * Output visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
 
----
+### Final Result
 
-The images for camera calibration are stored in the folder called `camera_cal`.  The images in `test_images` are for testing your pipeline on single frames.  The video called `project_video.mp4` is the video your pipeline should work well on.  `challenge_video.mp4` is an extra (and optional) challenge for you if you want to test your pipeline.
+The final pipleline has been successfully applied in both project video and challenge video. (https://youtu.be/JmJUB54CtmU)
 
-If you're feeling ambitious (totally optional though), don't stop there!  We encourage you to go out and take video of your own, calibrate your camera and show us how you would implement this project from scratch!
+
+### Camera Calibration
+
+Using the calibration chessboard images provided in the repository, we successfully obtained the camera matrix and distortion coefficientss by leveraging fuctions like cv2.findChessboardCorners, cv2.calibrateCamera from OpencCV library.   
+
+After camera matrix and distortion matrix are obained, we stored them in a pickle file so that we can quickly retreive them later on without having to calculate them afresh every time we use them to undistort images.
+
+![Camera Calibration]('./camera_calibration.png')
+
+
+class Calibrarte in file calibrate.py implemented camera calibration feature, the main external interface is the Calibrarte::undistort method
+
+### Pipeline (single images)
+
+### Pipeline (video)
+
+### Reflection
