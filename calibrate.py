@@ -97,9 +97,9 @@ class Calibrarte(object):
         f, (ax1, ax2) = plt.subplots(1, 2)
         f.tight_layout()
         ax1.imshow(img)
-        ax1.set_title('Original Image', fontsize=50)
+        ax1.set_title('Original Image')
         ax2.imshow(undist)
-        ax2.set_title('Undistorted Image', fontsize=50)
+        ax2.set_title('Undistorted Image')
 
         plt.show()
         return

@@ -248,15 +248,7 @@ class Threshold(Calibrarte):
         binary = np.zeros_like(R)
         binary[(R > thresh[0]) & (R <= thresh[1])] = 1
         return binary
-    def run(self):
-#         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
-#                   './test_images/straight16.jpg','./test_images/straight17.jpg']
-        fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
-          './test_images/test5.jpg','./test_images/test6.jpg']
-#         fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
-#           './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
-#         fnames = ['./test_images/challenge2.jpg']
-#         fnames = ['./exception_img.jpg']
+    def test_thresholds(self, fnames):
         res_imgs = []
         for fname in fnames:
             img = self.thresh_one_image_fname(fname,debug=True)
@@ -265,8 +257,21 @@ class Threshold(Calibrarte):
         res_imgs = np.array(res_imgs)
         res_imgs = np.concatenate(res_imgs, axis=0)
         res_imgs = res_imgs[...,::-1]
-        plt.imshow(res_imgs)
-        plt.show()
+        plt.imshow(res_imgs) 
+        plt.show()     
+        return
+    def run(self):
+#         fnames = ['./test_images/straight13.jpg','./test_images/straight14.jpg','./test_images/straight15.jpg',
+#                   './test_images/straight16.jpg','./test_images/straight17.jpg']
+        fnames = ['./test_images/test1.jpg','./test_images/test2.jpg','./test_images/test3.jpg','./test_images/test4.jpg',
+          './test_images/test5.jpg','./test_images/test6.jpg']
+#         fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
+#           './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
+        fnames = ['./test_images/challenge2.jpg']
+        self.test_thresholds(fnames)
+        
+#         fnames = ['./exception_img.jpg']
+        
         return
 
 
