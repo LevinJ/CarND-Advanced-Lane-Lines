@@ -71,9 +71,9 @@ class LaneDetection(MeasueCurvature):
         clip = VideoFileClip('./project_video.mp4')
         initial_img = None
         for img in clip.iter_frames():
-            if self.count == 0:
+            if self.count == 5:
                 initial_img = img
-                plt.imsave('./test_images/img_0.jpg', initial_img)
+                plt.imsave('./test_images/img_5.jpg', initial_img)
                 break
             else:
                 self.count = self.count + 1
@@ -92,7 +92,7 @@ class LaneDetection(MeasueCurvature):
 #         self.test_on_videos('./challenge_video.mp4','./challenge.mp4')
 #         self.test_on_videos('./harder_challenge_video.mp4','./harder_challenge.mp4')
 
-#         plt.show()
+        plt.show()
         
         return
 
