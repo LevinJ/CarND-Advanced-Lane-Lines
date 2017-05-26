@@ -186,7 +186,7 @@ class MeasueCurvature(LocateLanePixel):
 #         fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
 #           './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
 #         fnames = ['./test_images/challenge2.jpg']
-#         fnames = ['./test_images/test5.jpg']
+        fnames = ['./test_images/test5.jpg']
         
 
         res_imgs = []

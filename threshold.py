@@ -153,6 +153,7 @@ class Threshold(Calibrarte):
         
         
         color_combined = np.dstack(( np.uint8(255*gradx/np.max(gradx)), np.uint8(255*s_color/np.max(s_color)), np.zeros_like(s_color)))
+        color_combined = self.yuv_thres_yellow_white(image)
         
         if g_frame_tracking.use_last_lane_area_as_roi():
             roi_img,color_combined = self.__region_of_interest_last_lane_area(res_imgs, color_combined, combined)
@@ -160,11 +161,22 @@ class Threshold(Calibrarte):
             roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
 #         roi_img,color_combined = self.__region_of_interest_fixed(res_imgs, color_combined, combined)
         
+        res_imgs = [original_image, roi_img]
         res_img = self.stack_image_horizontal(res_imgs)
         
         if not debug:
             return original_image, image, color_combined, roi_img
         return  res_img
+    def yuv_thres_yellow_white(self, img):
+        img_yuv = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
+        white_mask = img_yuv[:, :, 0] >= 205
+        yellow_mask = img_yuv[:, :, 2] <= 105
+
+        binary = np.zeros_like(img_yuv[:, :, 0])
+        binary[white_mask | yellow_mask] = 1
+        binary = binary[:,:,np.newaxis]
+        binary = np.repeat(binary, 3, axis = -1)
+        return binary
     
     def thresh_one_image(self, original_image, debug=False):
         #input is an RGB image
@@ -258,6 +270,7 @@ class Threshold(Calibrarte):
         res_imgs = np.concatenate(res_imgs, axis=0)
         res_imgs = res_imgs[...,::-1]
         plt.imshow(res_imgs) 
+        plt.imsave('./test_images/yuv_2.jpg', res_imgs)
         plt.show()     
         return
     def run(self):
@@ -267,7 +280,7 @@ class Threshold(Calibrarte):
           './test_images/test5.jpg','./test_images/test6.jpg']
 #         fnames = ['./test_images/challenge0.jpg','./test_images/challenge1.jpg','./test_images/challenge2.jpg','./test_images/challenge3.jpg',
 #           './test_images/challenge4.jpg','./test_images/challenge5.jpg','./test_images/challenge6.jpg','./test_images/challenge7.jpg']
-        fnames = ['./test_images/challenge2.jpg']
+        fnames = ['./test_images/img_1040.jpg']
         self.test_thresholds(fnames)
         
 #         fnames = ['./exception_img.jpg']

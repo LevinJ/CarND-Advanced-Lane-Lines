@@ -27,6 +27,9 @@ class LaneDetection(MeasueCurvature):
             print('frame {}'.format(self.count))
              
             final_img = self.process_image_BGR(img_BGR)
+            #add frame number
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(final_img,str(self.count),(1000,50), font, 1,(255,255,255),2)
             final_img = final_img[...,::-1]
             
             self.count = self.count + 1
@@ -71,9 +74,9 @@ class LaneDetection(MeasueCurvature):
         clip = VideoFileClip('./project_video.mp4')
         initial_img = None
         for img in clip.iter_frames():
-            if self.count == 5:
+            if self.count == 1040:
                 initial_img = img
-                plt.imsave('./test_images/img_5.jpg', initial_img)
+                plt.imsave('./test_images/img_{}.jpg'.format(self.count), initial_img)
                 break
             else:
                 self.count = self.count + 1
